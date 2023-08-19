@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}       
+<h1>Hello World!</h1>
+        <p>My name is <strong>{{name}}</strong></p>
+        <p>My size is <strong>{{size}}</strong></p>
+        {% if size|length < 0 %}
+            <p>My size is short</p>
+        {% elif size|length < 1 %}
+            <p>My size is long</p>
+        {% else %}
+            <p>My size is very long</p>
+        {% endif %}
+        <p> Interests: </p>
+        <ul>
+            {% for interest in Interests %}
+                <li>{{interest}}</li>
+            {% endfor %}
+        </ul>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello World!</title>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+    </head>
+    <body>
+	{% include 'header.html' %}
+        <h1>Django Tutorial</h1>
+        <p>Hi there! This is a Django tutorial.</p>
+        {% block content %}
+        {% endblock content %}
+    </body>
+</html>
