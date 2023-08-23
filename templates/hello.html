@@ -1,19 +1,37 @@
-{% extends 'base.html' %}
-{% block content %}       
-<h1>Hello World!</h1>
-        <p>My name is <strong>{{name}}</strong></p>
-        <p>My size is <strong>{{size}}</strong></p>
-        {% if size|length < 0 %}
-            <p>My size is short</p>
-        {% elif size|length < 1 %}
-            <p>My size is long</p>
-        {% else %}
-            <p>My size is very long</p>
-        {% endif %}
-        <p> Interests: </p>
-        <ul>
-            {% for interest in Interests %}
-                <li>{{interest}}</li>
-            {% endfor %}
-        </ul>
-{% endblock %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2299.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p3 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    li.li1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+    span.s2 {-webkit-text-stroke: 0px #000000}
+    ul.ul1 {list-style-type: disc}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">{% extends 'base.html' %} {% block content %}</span></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>bidoffermineyours</b></span></h1>
+<p class="p3"><span class="s1">bomy <b>{{name}}</b></span></p>
+<p class="p1"><span class="s1">{% if size|length &lt; 0 %}</span></p>
+<p class="p3"><span class="s1">My size is short</span></p>
+<p class="p1"><span class="s1">{% elif size|length &lt; 1 %}</span></p>
+<p class="p3"><span class="s1">position is long</span></p>
+<p class="p1"><span class="s1">{% else %}</span></p>
+<p class="p3"><span class="s1">My size is very long</span></p>
+<p class="p1"><span class="s1">{% endif %}</span></p>
+<p class="p3"><span class="s1">Funding:</span></p>
+<ul class="ul1">
+  <li class="li1"><span class="s2"></span><span class="s1">{% for interest in Interests %}</span></li>
+  <li class="li1"><span class="s2"></span><span class="s1">{{interest}}</span></li>
+  <li class="li1"><span class="s2"></span><span class="s1">{% endfor %}</span></li>
+</ul>
+<p class="p1"><span class="s1">{% endblock %}</span></p>
+</body>
+</html>
