@@ -1,23 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+{% load static %}
+<!DOCTYPE html>
 <html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2299.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p3 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
-  </style>
-</head>
-<body>
-<p class="p1"><span class="s1">{% extends 'base.html' %} {% block content %}</span></p>
-<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>bidoffermineyours</b></span></h1>
-<p class="p3"><span class="s1">bomy <b>{{name}}</b></span></p>
-<p class="p4"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">{% endblock %}</span></p>
-</body>
+    <head>
+        <title>Hello World!</title>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+    </head>
+    <body>
+        <h1>Hello World!</h1>
+        <p>My name is <strong>{{name}}</strong></p>
+        <p>My age is <strong>{{age}}</strong></p>
+    </body>
 </html>
+
+
+
