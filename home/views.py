@@ -16,6 +16,10 @@ def hello(request):
     df_url = df_path
     df = pd.read_pickle(df_url)
     df = df.tail(38)
+    df['apy'] = df['apy'].multiply(100)
+    df['apy'] = df['apy'].apply(lambda x: round(x,0))
+    df['fundingrate'] = df['fundingrate'].multiply(10000)
+    df['fundingrate'] = df['fundingrate'].apply(lambda x: round(x,2))
     json_records = df.reset_index().to_json(orient='records')
     data = []
     data = json.loads(json_records)

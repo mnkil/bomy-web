@@ -1,5 +1,14 @@
 
+
 body{
     background-color: #000000;
     color: white;
+}
+.centered-image-container {
+	text-align: center;
+}
+
+.centered-image-container img {
+	    max-width: 100%;
+	        max-height: 100vh;
 }
