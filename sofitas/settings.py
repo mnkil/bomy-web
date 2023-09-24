@@ -28,6 +28,8 @@ DEBUG = True
 
 # ALLOWED_HOSTS = ['3.121.206.205', '3.68.57.234', '0.0.0.0', 'bidoffermineyours.com']
 ALLOWED_HOSTS = ['bidoffermineyours.com', 'www.bidoffermineyours.com', '3.68.57.234']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 
 # Application definition
