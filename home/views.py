@@ -14,7 +14,13 @@ def hello(request):
     # df_path = os.path.join(settings.BASE_DIR, 'bomy-web/static/dydx-funding.pickle') 
     df_path = 'home/ubuntu/bomy-web/static/dydx-funding.pickle'
     df_url = df_path
-    df = pd.read_pickle(df_url)
+    try:
+        df = pd.read_pickle(df_url)
+    except FileNotFoundError:
+        df_path = '~/sofitas/static/dydx-funding.pickle'
+        df_url = df_path
+        df = pd.read_pickle(df_url)
+
     df = df.tail(38)
     df['apy'] = df['apy'].multiply(100)
     df['apy'] = df['apy'].apply(lambda x: round(x,0))
