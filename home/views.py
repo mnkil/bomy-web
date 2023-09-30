@@ -21,20 +21,26 @@ def hello(request):
         df_url = df_path
         df = pd.read_pickle(df_url)
 
-    df = df.tail(38)
-    df['apy'] = df['apy'].multiply(100)
-    df['apy'] = df['apy'].apply(lambda x: round(x,0))
-    df['fundingrate'] = df['fundingrate'].multiply(10000)
-    df['fundingrate'] = df['fundingrate'].apply(lambda x: round(x,2))
-    json_records = df.reset_index().to_json(orient='records')
+    df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
+    dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD')]
+    dft = df.tail(38)
+    dft['apy'] = dft['apy'].multiply(100)
+    dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
+    dft['fundingrate'] = dft['fundingrate'].multiply(10000)
+    dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x,2))
+    json_records = dft.reset_index().to_json(orient='records')
     data = []
     data = json.loads(json_records)
+    json_records2 = dfchart.reset_index().to_json(orient='records')
+    cdata = []
+    cdata = json.loads(json_records2)
     context = {
         'name': name,
         'size': size,
         'interests': interests,
         'image_url': image_url,
-        'd' : data
+        'd' : data,
+	'c' : cdata
     }
 
     return render(request, 'hello.html', context)

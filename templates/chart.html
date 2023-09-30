@@ -1,0 +1,65 @@
+<html lang="en">
+<head>
+    <!-- Other meta tags, stylesheets, and metadata -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Center the chart container horizontally and vertically */
+        /* Reset margin and padding for body and html elements */
+        body, html {
+            margin: 0;
+            padding: 0;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Center vertically within the viewport */
+            width: 100%;   /* Center horizontally within the viewport */
+        }
+    </style>
+</head>
+<body>
+this is a test line 2
+
+    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        
+        // Dummy data for the line chart
+        var data = {
+            labels: ['January', 'February', 'March', 'April', 'May'],
+            datasets: [{
+                label: 'Sample Data',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                data: [65, 59, 80, 81, 56] // Dummy data points
+            }]
+        };
+
+        // Create and configure your line chart
+        var myChart = new Chart(ctx, {
+            type: 'line', // Changed from 'bar' to 'line'
+            data: data,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+
+</body>
+
+
+
+</html>
+
+
+
+
