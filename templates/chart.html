@@ -1,58 +1,74 @@
 <html lang="en">
 <head>
     <!-- Other meta tags, stylesheets, and metadata -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Center the chart container horizontally and vertically */
         /* Reset margin and padding for body and html elements */
         body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
+            width: 100%; 
         }
         .chart-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Center vertically within the viewport */
+            height: 100%; /* Center vertically within the viewport */
             width: 100%;   /* Center horizontally within the viewport */
         }
     </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-this is a test line 2
+<body style="background-color: black; color: white;">
+	<h2 class="text-center"><u>dydx funding history</u></h2><br>   
 
-    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+    <div class="chart-container" style="position: relative; height:100%; width:100%">
         <canvas id="myChart"></canvas>
     </div>
 
-    <script>
-        var ctx = document.getElementById('myChart').getContext('2d');
-        
-        // Dummy data for the line chart
-        var data = {
-            labels: ['January', 'February', 'March', 'April', 'May'],
-            datasets: [{
-                label: 'Sample Data',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                data: [65, 59, 80, 81, 56] // Dummy data points
-            }]
-        };
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    
+    // Parse the JSON data for BTC-USD and ETH-USD
+    var btcData = JSON.parse('{{ btc_data|escapejs }}');
+    var ethData = JSON.parse('{{ eth_data|escapejs }}');
+    console.log('yes baby');
 
-        // Create and configure your line chart
-        var myChart = new Chart(ctx, {
-            type: 'line', // Changed from 'bar' to 'line'
-            data: data,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+    // Create and configure your line chart with both datasets
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: btcData.timestamp, // Use the timestamp as x-axis labels
+            datasets: [
+                {
+                    label: 'BTC-USD',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    data: btcData.apy
+                },
+                {
+                    label: 'ETH-USD',
+                    borderColor: 'rgba(192, 75, 192, 1)',
+                    borderWidth: 1,
+                    data: ethData.apy
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
-    </script>
-
+        }
+    });
+</script>
 
 </body>
 
