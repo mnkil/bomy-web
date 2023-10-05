@@ -38,6 +38,9 @@
     // Parse the JSON data for BTC-USD and ETH-USD
     var btcData = JSON.parse('{{ btc_data|escapejs }}');
     var ethData = JSON.parse('{{ eth_data|escapejs }}');
+    var btcData_ma = JSON.parse('{{ btc_data_ma|escapejs }}');
+    var ethData_ma = JSON.parse('{{ eth_data_ma|escapejs }}');
+
     console.log('yes baby');
 
     // Create and configure your line chart with both datasets
@@ -57,6 +60,18 @@
                     borderColor: 'rgba(192, 75, 192, 1)',
                     borderWidth: 1,
                     data: ethData.apy
+                },
+                {
+                    label: 'BTC-USD_MA24',
+                    borderColor: 'rgba(75, 192, 192, 0.7)',
+                    borderWidth: 4,
+                    data: btcData_ma.apy
+                },
+                {
+                    label: 'ETH-USD_MA24',
+                    borderColor: 'rgba(192, 75, 192, 0.7)',
+                    borderWidth: 4,
+                    data: ethData_ma.apy
                 }
             ]
         },
@@ -69,11 +84,7 @@
         }
     });
 </script>
-
 </body>
-
-
-
 </html>
 
 

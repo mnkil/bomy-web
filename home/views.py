@@ -36,21 +36,27 @@ def hello(request):
     data = []
     data = json.loads(json_records)
     
-    # Filter data for BTC-USDD and ETH-USD
+    # Filter data for BTC-USD and ETH-USD
     
     df_btc = dfchart[dfchart['market'] == 'BTC-USD']
     df_eth = dfchart[dfchart['market'] == 'ETH-USD']
-    
+    df_btc_ma = df_btc.copy()
+    df_eth_ma = df_eth.copy()
+    df_btc_ma['apy'] = df_btc_ma['apy'].rolling(window=24).mean().fillna(0) 
+    df_eth_ma['apy'] = df_eth_ma['apy'].rolling(window=24).mean().fillna(0)
+ 
     # Prepare data for BTC-USD and ETH-USD as lists
     btc_data = df_btc[['timestamp', 'apy']].to_dict(orient='list')
-    eth_data = df_eth[['timestamp', 'apy']].to_dict(orient='list')
-    
+    eth_data = df_eth[['timestamp', 'apy']].to_dict(orient='list') 
+    btc_data_ma = df_btc_ma[['timestamp', 'apy']].to_dict(orient='list')
+    eth_data_ma = df_eth_ma[['timestamp', 'apy']].to_dict(orient='list') 
+ 
     # Convert data to JSON for passing to the template
     btc_json = json.dumps(btc_data)
     eth_json = json.dumps(eth_data)    
-    print('test')
-    print(btc_json)
-    print(eth_json)	
+    btc_json_ma = json.dumps(btc_data_ma)
+    eth_json_ma = json.dumps(eth_data_ma)     
+
     context = {
         'name': name,
         'size': size,
@@ -58,7 +64,9 @@ def hello(request):
         'image_url': image_url,
         'd': data,
         'btc_data': btc_json,
-        'eth_data': eth_json
+        'eth_data': eth_json,
+        'btc_data_ma': btc_json_ma,
+        'eth_data_ma': eth_json_ma
     }
 
     return render(request, 'hello.html', context)
