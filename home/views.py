@@ -1,5 +1,8 @@
 from django.shortcuts import render, HttpResponse
 from django.templatetags.static import static
+import sys
+print(sys.version)
+print('no fucking way')
 import pandas as pd
 import json
 
@@ -26,7 +29,7 @@ def hello(request):
     dft['apy'] = dft['apy'].multiply(100)
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
-    dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x,3))
+    dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x, 3))
     dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD')]
     dfchart['apy'] = dfchart['apy'].multiply(100)
     dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
