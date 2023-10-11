@@ -60,6 +60,16 @@ def hello(request):
     btc_json_ma = json.dumps(btc_data_ma)
     eth_json_ma = json.dumps(eth_data_ma)     
 
+    # btc spot data
+    df_path = 'home/ubuntu/bomy-web/static/btc.pickle'
+    df_url = df_path
+    try:
+        df = pd.read_pickle(df_url)
+    except FileNotFoundError:
+        df_path = '~/sofitas/static/btc.pickle'
+        df_url = df_path
+        df = pd.read_pickle(df_url)
+
     context = {
         'name': name,
         'size': size,
