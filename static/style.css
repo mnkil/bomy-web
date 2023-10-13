@@ -3,7 +3,22 @@
 body{
     background-color: #000000;
     color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Use viewport height to ensure full page height */
 }
+
+.chart-container {
+    position: relative;
+    width: 50%;
+    height: 50%;
+    margin-bottom: 20px; /* Optional: for some space between the charts */
+}
+
 .centered-image-container {
 	text-align: center;
 }

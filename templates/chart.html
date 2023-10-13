@@ -28,8 +28,12 @@
 <body style="background-color: black; color: white;">
 	<h2 class="text-center"><u>dydx funding history</u></h2><br>   
 
-    <div class="chart-container" style="position: relative; height:100%; width:100%">
+    <div class="chart-container" style="width:100%">
         <canvas id="myChart"></canvas>
+    </div>
+    <h2 class="text-center"><u>btc spot & realized vol</u></h2><br>
+    <div class="chart-container" style="width:100%">
+        <canvas id="myChart2"></canvas>
     </div>
 
 <script>
@@ -51,25 +55,25 @@
             datasets: [
                 {
                     label: 'BTC-USD',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderColor: 'rgba(0, 255, 127, 1)',
                     borderWidth: 1,
                     data: btcData.apy
                 },
                 {
                     label: 'ETH-USD',
-                    borderColor: 'rgba(192, 75, 192, 1)',
+                    borderColor: 'rgba(255, 99, 71, 1)',
                     borderWidth: 1,
                     data: ethData.apy
                 },
                 {
                     label: 'BTC-USD_MA24',
-                    borderColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(0, 255, 127, 1)',
                     borderWidth: 4,
                     data: btcData_ma.apy
                 },
                 {
                     label: 'ETH-USD_MA24',
-                    borderColor: 'rgba(192, 75, 192, 0.7)',
+                    borderColor: 'rgba(255, 99, 71, 1)',
                     borderWidth: 4,
                     data: ethData_ma.apy
                 }
@@ -80,6 +84,48 @@
                 y: {
                     beginAtZero: true
                 }
+            }
+        }
+    });
+</script>
+<script>
+    var ctx2 = document.getElementById('myChart2').getContext('2d');
+    var xbtData = JSON.parse('{{ xbt_json|escapejs }}');
+
+    // Create and configure your line chart with both datasets
+    var myChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: xbtData.timestamp, // Use the timestamp as x-axis labels
+            datasets: [
+                {
+                    label: 'btc-spot',
+                    borderColor: 'rgba(0, 255, 127, 1)',
+                    borderWidth: 1,
+                    data: xbtData.btc_spot,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'btc-1w-realized-vol',
+                    borderColor: 'rgba(255, 99, 71, 1)',
+                    borderWidth: 1,
+                    data: xbtData['btc-1w-realized'],
+                    yAxisID: 'y-axis-2'
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: [{
+                    id: 'y-axis-1',
+                    position: 'left',
+                    beginAtZero: false
+                },
+                {
+                    id: 'y-axis-2',
+                    position: 'right',
+                    beginAtZero: false
+                }]
             }
         }
     });

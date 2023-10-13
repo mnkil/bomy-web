@@ -2,9 +2,9 @@ from django.shortcuts import render, HttpResponse
 from django.templatetags.static import static
 import sys
 print(sys.version)
-print('no fucking way')
 import pandas as pd
 import json
+import numpy as np
 
 # Create your views here.
 def hello(request):
@@ -61,14 +61,24 @@ def hello(request):
     eth_json_ma = json.dumps(eth_data_ma)     
 
     # btc spot data
-    df_path = 'home/ubuntu/bomy-web/static/btc.pickle'
-    df_url = df_path
+    df_btc_sp_path = 'home/ubuntu/bomy-web/static/btc.pickle'
+    df_url_btc_sp = df_btc_sp_path
     try:
-        df = pd.read_pickle(df_url)
+        df_xbt = pd.read_pickle(df_url_btc_sp)
     except FileNotFoundError:
-        df_path = '~/sofitas/static/btc.pickle'
-        df_url = df_path
-        df = pd.read_pickle(df_url)
+        df_btc_sp_path = '~/sofitas/static/btc.pickle'
+        df_url_btc_sp = df_btc_sp_path
+        df_xbt = pd.read_pickle(df_url_btc_sp)
+    df_xbt = df_xbt.iloc[-1::-60].iloc[::-1]
+    df_xbt.rename(columns={'Timestamp': 'timestamp', 'BTC-Spot': 'btc_spot'}, inplace=True)
+    df_xbt['logreturn'] = np.log(df_xbt['btc_spot'] / df_xbt['btc_spot'].shift(1))
+    df_xbt['logreturn'] = df_xbt['logreturn'] * 100
+    df_xbt['logreturn'] = df_xbt['logreturn'].fillna(0)
+    window_size = 168
+    df_xbt['btc-1w-realized'] = df_xbt['logreturn'].rolling(window=window_size).std().fillna(0)
+    df_xbt = df_xbt.iloc[168:]
+    xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized']].to_dict(orient='list')
+    xbt_json = json.dumps(xbt)
 
     context = {
         'name': name,
@@ -79,7 +89,8 @@ def hello(request):
         'btc_data': btc_json,
         'eth_data': eth_json,
         'btc_data_ma': btc_json_ma,
-        'eth_data_ma': eth_json_ma
+        'eth_data_ma': eth_json_ma,
+        'xbt_json': xbt_json
     }
 
     return render(request, 'hello.html', context)
