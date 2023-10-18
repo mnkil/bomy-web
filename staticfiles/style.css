@@ -13,7 +13,7 @@ body{
     height: 100vh; /* Use viewport height to ensure full page height */
 }
 
-.chart-container {;
+.chart-container
     position: relative;
     width: 50%;
     height: 50%;
