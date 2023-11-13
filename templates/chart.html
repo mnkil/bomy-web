@@ -34,7 +34,11 @@
     <div class="chart-container" style="width:100%">
         <canvas id="myChart2"></canvas>
     </div>
-
+    <h2 class="text-center"><u>btc atm curve</u></h2><br>
+    <div class="chart-container" style="width:100%">
+    <canvas id="myChart3"></canvas>
+    </div>
+    <p id="footnote" class="text-center"></p> <!-- This is where the footnote will appear -->
 <script>
     var ctx = document.getElementById('myChart').getContext('2d');
     
@@ -128,6 +132,44 @@
             }
         }
     });
+</script>
+<script>
+    var ctx3 = document.getElementById('myChart3').getContext('2d');
+    var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
+    var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
+
+// Format dates without seconds for the x-axis
+var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp) {
+    var date = new Date(timestamp);
+    return date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+});
+
+    // Create and configure your line chart for expiration data
+    var myChart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: formattedLabels, // Use the expiration_timestamp as x-axis labels
+            datasets: [{
+                label: 'mid_iv',
+                borderColor: 'rgba(0, 255, 127, 1)', // Use the green color as in the other charts
+                borderWidth: 1,
+                data: expirationData.mid_iv
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Add the oldest timestamp as a footnote
+    var oldestTimestamp = new Date(Math.min.apply(null, expirationData.timestamp.map(function(e) {
+        return new Date(e);
+    })));
+    document.getElementById('footnote').innerText = 'deribit vols: ' + oldestTimestamp.toLocaleString('en-US', { hour12: false, timeStyle: 'medium', dateStyle: 'short' });
 </script>
 </body>
 </html>
