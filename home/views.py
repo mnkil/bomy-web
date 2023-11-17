@@ -98,6 +98,23 @@ def hello(request):
     }
     expiration_data_json = json.dumps(expiration_data, cls=DjangoJSONEncoder)
 
+    # eth atm data
+    df_eth_atm_path = 'home/ubuntu/bomy-web/static/ethatm_latest.pickle'
+    try:
+        df_eth_atm = pd.read_pickle(df_eth_atm_path)
+    except FileNotFoundError:
+        df_eth_atm_path = '~/bomy-web/static/ethatm_latest.pickle'
+        df_eth_atm = pd.read_pickle(df_eth_atm_path)
+    df_eth_atm['mid_iv'] = (df_eth_atm['bid_iv'] + df_eth_atm['ask_iv']) / 2
+    # Assuming 'df' is your DataFrame
+
+    eth_expiration_data = {
+        'expiration_timestamp': df_eth_atm['expiration_timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist(),
+        'mid_iv': df_eth_atm['mid_iv'].tolist(),
+        'timestamp': df_eth_atm['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist()
+    }
+    eth_expiration_data_json = json.dumps(eth_expiration_data, cls=DjangoJSONEncoder)
+
     context = {
         'name': name,
         'size': size,
@@ -109,7 +126,8 @@ def hello(request):
         'btc_data_ma': btc_json_ma,
         'eth_data_ma': eth_json_ma,
         'xbt_json': xbt_json,
-        'expiration_data': expiration_data_json
+        'expiration_data': expiration_data_json,
+        'eth_expiration_data':  eth_expiration_data_json
     }
 
     return render(request, 'hello.html', context)

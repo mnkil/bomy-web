@@ -35,7 +35,7 @@
     <div class="chart-container" style="width:100%">
         <canvas id="myChart2"></canvas>
     </div>
-    <h2 class="text-left" style="color: black; background-color: white;">btc atm curve</h2>
+    <h2 class="text-left" style="color: black; background-color: white;">btc & eth atm vol curve</h2>
     <div class="chart-container" style="width:100%">
     <canvas id="myChart3"></canvas>
     </div>
@@ -134,7 +134,8 @@
 <script>
     var ctx3 = document.getElementById('myChart3').getContext('2d');
     var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
-    var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
+    // var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
+    var ethexpirationData = JSON.parse('{{ eth_expiration_data|escapejs }}');
 
 var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp) {
     var date = new Date(timestamp);
@@ -146,10 +147,16 @@ var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp
         data: {
             labels: formattedLabels, // Use the expiration_timestamp as x-axis labels
             datasets: [{
-                label: 'mid_iv',
+                label: 'btc_mid_iv',
                 borderColor: 'rgba(0, 255, 127, 1)', // Use the green color as in the other charts
                 borderWidth: 1,
                 data: expirationData.mid_iv
+            },
+            {
+                label: 'eth_mid_iv',
+                borderColor: 'rgba(255, 99, 71, 1)',
+                borderWidth: 1,
+                data: ethexpirationData.mid_iv
             }]
         },
         options: {
