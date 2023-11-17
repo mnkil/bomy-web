@@ -24,12 +24,14 @@ template_dir = BASE_DIR / "templates"
 SECRET_KEY = "django-insecure-ji^r!g&jg(-m_ms0jrbui$(lbsm%7fp5_*))l9vrfv1p(*7x*#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000  # 1 year; adjust as needed
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
+DEBUG = True
+if DEBUG == False:
+	SECURE_SSL_REDIRECT = True
+	SECURE_HSTS_SECONDS = 31536000  # 1 year; adjust as needed
+	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+	SECURE_HSTS_PRELOAD = True
+else:
+	print('DEBUG MODE')
 
 # ALLOWED_HOSTS = ['3.121.206.205', '3.68.57.234', '0.0.0.0', 'bidoffermineyours.com','127.0.0.1']]
 ALLOWED_HOSTS = ['bidoffermineyours.com', 'www.bidoffermineyours.com', '3.68.57.234', '127.0.0.1']
