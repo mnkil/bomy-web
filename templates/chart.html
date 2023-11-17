@@ -39,11 +39,10 @@
     <div class="chart-container" style="width:100%">
     <canvas id="myChart3"></canvas>
     </div>
-    <p id="footnote" class="text-center"></p> <!-- This is where the footnote will appear -->
+    <p id="footnote" class="text-center"></p>
 <script>
     var ctx = document.getElementById('myChart').getContext('2d');
-    
-    // Parse the JSON data for BTC-USD and ETH-USD
+
     var btcData = JSON.parse('{{ btc_data|escapejs }}');
     var ethData = JSON.parse('{{ eth_data|escapejs }}');
     var btcData_ma = JSON.parse('{{ btc_data_ma|escapejs }}');
@@ -51,11 +50,10 @@
 
     console.log('yes baby');
 
-    // Create and configure your line chart with both datasets
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: btcData.timestamp, // Use the timestamp as x-axis labels
+            labels: btcData.timestamp,
             datasets: [
                 {
                     label: 'BTC-USD',
@@ -96,7 +94,6 @@
     var ctx2 = document.getElementById('myChart2').getContext('2d');
     var xbtData = JSON.parse('{{ xbt_json|escapejs }}');
 
-    // Create and configure your line chart with both datasets
     var myChart2 = new Chart(ctx2, {
         type: 'line',
         data: {
@@ -139,13 +136,11 @@
     var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
     var expirationData = JSON.parse('{{ expiration_data|escapejs }}');
 
-// Format dates without seconds for the x-axis
 var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp) {
     var date = new Date(timestamp);
     return date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 });
 
-    // Create and configure your line chart for expiration data
     var myChart3 = new Chart(ctx3, {
         type: 'line',
         data: {
@@ -166,7 +161,6 @@ var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp
         }
     });
 
-    // Add the oldest timestamp as a footnote
     var oldestTimestamp = new Date(Math.min.apply(null, expirationData.timestamp.map(function(e) {
         return new Date(e);
     })));
