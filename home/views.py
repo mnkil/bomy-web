@@ -31,7 +31,7 @@ def hello(request):
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
     dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x, 3))
-    dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD')]
+    dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD') | (df['market'] == 'SOL-USD')]
     dfchart['apy'] = dfchart['apy'].multiply(100)
     dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
     dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
@@ -44,22 +44,29 @@ def hello(request):
 
     df_btc = dfchart[dfchart['market'] == 'BTC-USD']
     df_eth = dfchart[dfchart['market'] == 'ETH-USD']
+    df_sol = dfchart[dfchart['market'] == 'SOL-USD']
     df_btc_ma = df_btc.copy()
     df_eth_ma = df_eth.copy()
+    df_sol_ma = df_sol.copy()
     df_btc_ma['apy'] = df_btc_ma['apy'].rolling(window=24).mean().fillna(0)
     df_eth_ma['apy'] = df_eth_ma['apy'].rolling(window=24).mean().fillna(0)
+    df_sol_ma['apy'] = df_sol_ma['apy'].rolling(window=24).mean().fillna(0)
 
-    # Prepare data for BTC-USD and ETH-USD as lists
+    # Prepare data for BTC-USD,ETH-USD and SOL-USD as lists
     btc_data = df_btc[['timestamp', 'apy']].to_dict(orient='list')
     eth_data = df_eth[['timestamp', 'apy']].to_dict(orient='list')
+    sol_data = df_sol[['timestamp', 'apy']].to_dict(orient='list')
     btc_data_ma = df_btc_ma[['timestamp', 'apy']].to_dict(orient='list')
     eth_data_ma = df_eth_ma[['timestamp', 'apy']].to_dict(orient='list')
+    sol_data_ma = df_sol_ma[['timestamp', 'apy']].to_dict(orient='list')
 
     # Convert data to JSON for passing to the template
     btc_json = json.dumps(btc_data)
     eth_json = json.dumps(eth_data)
+    sol_json = json.dumps(sol_data)
     btc_json_ma = json.dumps(btc_data_ma)
     eth_json_ma = json.dumps(eth_data_ma)
+    sol_json_ma = json.dumps(sol_data_ma)
 
     # btc spot data
     df_btc_sp_path = 'home/ubuntu/bomy-web/static/btc.pickle'
@@ -123,8 +130,10 @@ def hello(request):
         'd': data,
         'btc_data': btc_json,
         'eth_data': eth_json,
+        'sol_data': sol_json,
         'btc_data_ma': btc_json_ma,
         'eth_data_ma': eth_json_ma,
+        'sol_data_ma': sol_json_ma,
         'xbt_json': xbt_json,
         'expiration_data': expiration_data_json,
         'eth_expiration_data':  eth_expiration_data_json

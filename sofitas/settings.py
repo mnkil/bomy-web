@@ -24,7 +24,7 @@ template_dir = BASE_DIR / "templates"
 SECRET_KEY = "django-insecure-ji^r!g&jg(-m_ms0jrbui$(lbsm%7fp5_*))l9vrfv1p(*7x*#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 if DEBUG == False:
 	SECURE_SSL_REDIRECT = True
 	SECURE_HSTS_SECONDS = 31536000  # 1 year; adjust as needed
