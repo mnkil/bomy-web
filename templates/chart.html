@@ -19,10 +19,12 @@
     </style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
 </head>
 <body style="background-color: black; color: white;">
     <br>
@@ -41,6 +43,7 @@
     </div>
     <p id="footnote" class="text-center"></p>
 <script>
+    moment.locale('en');
     var ctx = document.getElementById('myChart').getContext('2d');
 
     var btcData = JSON.parse('{{ btc_data|escapejs }}');
@@ -50,12 +53,18 @@
     var ethData_ma = JSON.parse('{{ eth_data_ma|escapejs }}');
     var solData_ma = JSON.parse('{{ sol_data_ma|escapejs }}');
 
+    var formattedLabelsz = btcData.timestamp
+
+    // var formattedLabelsz = btcData.timestamp.map(function(timestamp) {
+    // return moment(timestamp, 'YYYY-MM-DD HH:mm:ss').toISOString();
+    // });
+
     console.log('chart data retrieve done');
 
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: btcData.timestamp,
+            labels: formattedLabelsz,
             datasets: [
                 {
                     label: 'BTC-USD',
@@ -97,6 +106,23 @@
         },
         options: {
             scales: {
+                x: {
+                type: 'time',
+                time: {
+                    },
+                    ticks: {
+                    callback: function(value, index, values) {
+                        // Display only every 4th label
+                        if (index % 4 === 0) {
+                            // return this.getLabelForValue(value);
+
+                            return moment(value).format('YYYY-MM-DD');
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                },
                 y: {
                     beginAtZero: true
                 }
