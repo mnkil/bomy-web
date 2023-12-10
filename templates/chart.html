@@ -70,37 +70,46 @@
                     label: 'BTC-USD',
                     borderColor: 'rgba(0, 255, 127, 1)',
                     borderWidth: 1,
-                    data: btcData.apy
+                    data: btcData.apy,
+                    hidden: true
                 },
                 {
                     label: 'ETH-USD',
                     borderColor: 'rgba(255, 99, 71, 1)',
                     borderWidth: 1,
-                    data: ethData.apy
+                    data: ethData.apy,
+                    hidden: true
                 },
                 {
                     label: 'SOL-USD',
-                    borderColor: 'rgba(0, 191, 255, 1)',
+                    borderColor: 'rgba(255, 165, 0, 1)',
                     borderWidth: 1,
-                    data: solData.apy
+                    data: solData.apy,
+                    hidden: true,
                 }, 
                 {
                     label: 'BTC-USD_MA24',
                     borderColor: 'rgba(0, 255, 127, 1)',
                     borderWidth: 4,
-                    data: btcData_ma.apy
+                    data: btcData_ma.apy,
+                    pointRadius: 0,
+                    borderWidth: 2
                 },
                 {
                     label: 'ETH-USD_MA24',
                     borderColor: 'rgba(255, 99, 71, 1)',
                     borderWidth: 4,
-                    data: ethData_ma.apy
+                    data: ethData_ma.apy,
+                    pointRadius: 0,
+                    borderWidth: 2
                 },
                 {
                     label: 'SOL-USD_MA24',
                     borderColor: 'rgba(255, 165, 0, 1)',
                     borderWidth: 4,
-                    data: solData_ma.apy
+                    data: solData_ma.apy,
+                    pointRadius: 0,
+                    borderWidth: 2
                 }
             ]
         },

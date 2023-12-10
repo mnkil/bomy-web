@@ -30,12 +30,13 @@ if DEBUG == False:
 	SECURE_HSTS_SECONDS = 31536000  # 1 year; adjust as needed
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 	SECURE_HSTS_PRELOAD = True
+	SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
 	print('DEBUG MODE')
 
 # ALLOWED_HOSTS = ['3.121.206.205', '3.68.57.234', '0.0.0.0', 'bidoffermineyours.com','127.0.0.1']]
 ALLOWED_HOSTS = ['bidoffermineyours.com', 'www.bidoffermineyours.com', '3.68.57.234', '127.0.0.1']
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 
