@@ -141,12 +141,14 @@
 </script>
 <script>
     var ctx2 = document.getElementById('myChart2').getContext('2d');
+    console.log(JSON.parse('{{ xbt_json|escapejs }}')); 
     var xbtData = JSON.parse('{{ xbt_json|escapejs }}');
+    var formattedLabelst = xbtData.timestamp
 
     var myChart2 = new Chart(ctx2, {
         type: 'line',
         data: {
-            labels: xbtData.timestamp, // Use the timestamp as x-axis labels
+            labels: formattedLabelst, // Use the timestamp as x-axis labels
             datasets: [
                 {
                     label: 'btc-spot',
@@ -154,7 +156,8 @@
                     borderWidth: 1,
                     data: xbtData.btc_spot,
                     yAxisID: 'y-axis-1'
-                },
+                }
+                ,
                 {
                     label: 'btc-1w-realized-vol',
                     borderColor: 'rgba(255, 99, 71, 1)',
