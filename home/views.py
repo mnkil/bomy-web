@@ -1,11 +1,14 @@
 from django.shortcuts import render, HttpResponse
 from django.templatetags.static import static
 from django.core.serializers.json import DjangoJSONEncoder
+from django.conf import settings
 import sys
 print(sys.version)
 import pandas as pd
 import json
 import numpy as np
+import sqlite3
+import os
 
 # Create your views here.
 def hello(request):
@@ -13,17 +16,24 @@ def hello(request):
     size = 40
     interests = ['mochi', 'degen crypto', 'beer']
 
-    image_path = 'tramdepot.jpeg'  # Path to the image within the static directory
-    image_url = static(image_path)  # Get the URL for the image
-    # df_path = os.path.join(settings.BASE_DIR, 'bomy-web/static/dydx-funding.pickle')
-    df_path = 'home/ubuntu/bomy-web/static/dydx-funding.pickle'
-    df_url = df_path
+    image_path = 'tramdepot.jpeg'
+    image_url = static(image_path)
+
+    # Construct the relative path to the SQLite database using BASE_DIR
+    df_path = os.path.join(settings.BASE_DIR, 'static', 'dydx-funding.db')
+
+    # Check if the database file exists
+    if not os.path.exists(df_path):
+        return HttpResponse("Database file does not exist.")
+
+    connection = sqlite3.connect(df_path)
+
     try:
-        df = pd.read_pickle(df_url)
-    except FileNotFoundError:
-        df_path = '~/sofitas/static/dydx-funding.pickle'
-        df_url = df_path
-        df = pd.read_pickle(df_url)
+        df = pd.read_sql_query("SELECT * FROM [dydx-funding]", connection)
+    except Exception as e:
+        return HttpResponse(f"An error occurred: {str(e)}")
+    finally:
+        connection.close()
 
     df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
     dft = df.tail(38)
