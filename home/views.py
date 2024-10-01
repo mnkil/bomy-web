@@ -135,9 +135,6 @@ def hello(request):
     eth_expiration_data_json = json.dumps(eth_expiration_data, cls=DjangoJSONEncoder)
 
     context = {
-        'name': name,
-        'size': size,
-        'interests': interests,
         'image_url': image_url,
         'd': data,
         'btc_data': btc_json,
