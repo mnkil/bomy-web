@@ -1,9 +1,8 @@
 # bidoffermineyours
 
-> django web framework implementation for market metrics
+> django/apache web framework implementation for various low frequency market metrics
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](URL-to-build)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Project Image](toucan.png)
 
