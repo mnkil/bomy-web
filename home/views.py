@@ -76,30 +76,44 @@ def hello(request):
     # print(btc_data_ma)
 
     # btc spot data
-    df_btc_sp_path = 'home/ubuntu/bomy-web/static/btc-hist.pickle'
-    df_url_btc_sp = df_btc_sp_path
-    try:
-        df_xbt = pd.read_pickle(df_url_btc_sp)
-    except FileNotFoundError:
-        df_btc_sp_path = '~/sofitas/static/btc-hist.pickle'
-        df_url_btc_sp = df_btc_sp_path
-        df_xbt = pd.read_pickle(df_url_btc_sp)
+    # df_btc_sp_path = 'home/ubuntu/bomy-web/static/btc-hist.pickle'
+    # df_url_btc_sp = df_btc_sp_path
+    # try:
+    #     df_xbt = pd.read_pickle(df_url_btc_sp)
+    # except FileNotFoundError:
+    #    df_btc_sp_path = '~/sofitas/static/btc-hist.pickle'
+    #    df_url_btc_sp = df_btc_sp_path
+    #    df_xbt = pd.read_pickle(df_url_btc_sp)
     # df_xbt = df_xbt.iloc[-1::-60].iloc[::-1]
-    df_xbt.rename(columns={'Open Time': 'timestamp', 'Close': 'btc_spot'}, inplace=True)
-    df_xbt['logreturn'] = np.log(df_xbt['btc_spot'] / df_xbt['btc_spot'].shift(1))
-    df_xbt['logreturn'] = df_xbt['logreturn'] * 100
-    df_xbt['logreturn'] = df_xbt['logreturn'].fillna(0)
-    window_size = 7
-    df_xbt['btc-1w-realized'] = df_xbt['logreturn'].rolling(window=window_size).std().fillna(0)
-    df_xbt['btc-1w-realized'] = df_xbt['btc-1w-realized'] * 365.25**0.5
-    df_xbt['timestamp'] = df_xbt['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    # df_xbt = df_xbt.iloc[10:]
-    # print(df_xbt)
-    xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized']].to_dict(orient='list')
-    xbt_json = json.dumps(xbt)
-    # print('now xbt')
-    # print(xbt)
+    # btc spot data from SQLite database instead of the pickle file
+    btc_db_path = os.path.join(settings.BASE_DIR, 'static', 'btc-hist.db')
 
+    # Check if the database file exists
+    if not os.path.exists(btc_db_path):
+        return HttpResponse("BTC history database file does not exist.")
+
+    # Connect to the SQLite3 database
+    connection = sqlite3.connect(btc_db_path)
+    try:
+        # Read the data from the database (assuming the relevant columns are 'Open Time' and 'Close')
+        df_xbt = pd.read_sql_query('SELECT "Open Time" AS timestamp, "Close" AS btc_spot FROM btc_history', connection)
+        df_xbt.rename(columns={'Open Time': 'timestamp', 'Close': 'btc_spot'}, inplace=True)
+        df_xbt['logreturn'] = np.log(df_xbt['btc_spot'] / df_xbt['btc_spot'].shift(1))
+        df_xbt['logreturn'] = df_xbt['logreturn'] * 100
+        df_xbt['logreturn'] = df_xbt['logreturn'].fillna(0)
+        window_size = 7
+        df_xbt['btc-1w-realized'] = df_xbt['logreturn'].rolling(window=window_size).std().fillna(0)
+        df_xbt['btc-1w-realized'] = df_xbt['btc-1w-realized'] * 365.25**0.5
+        df_xbt['timestamp'] = pd.to_datetime(df_xbt['timestamp'])
+        df_xbt['timestamp'] = df_xbt['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        # df_xbt = df_xbt.iloc[10:]
+        # print(df_xbt)
+        xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized']].to_dict(orient='list')
+        xbt_json = json.dumps(xbt)
+        # print('now xbt')
+    # print(xbt)
+    finally:
+        connection.close()
     # btc atm data
     df_btc_atm_path = 'home/ubuntu/bomy-web/static/btcatm_latest.pickle'
     try:
