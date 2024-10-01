@@ -24,5 +24,8 @@ node_modules
 .sass-cache
 bomyenv
 
+# IDE
+.idea/
+
 
 
