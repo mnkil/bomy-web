@@ -12,10 +12,6 @@ import os
 
 # Create your views here.
 def hello(request):
-    name = "mad mike"
-    size = 40
-    interests = ['mochi', 'degen crypto', 'beer']
-
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
 
