@@ -1,4 +1,4 @@
-# bidoffermineyours
+# bidoffermineyours.com
 
 > django/apache web framework implementation for various low frequency market metrics
 
