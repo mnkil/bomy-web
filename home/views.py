@@ -17,15 +17,20 @@ def hello(request):
 
     # Construct the relative path to the SQLite database using BASE_DIR
     df_path = os.path.join(settings.BASE_DIR, 'static', 'dydx-funding.db')
+    dfh_path = os.path.join(settings.BASE_DIR, 'static', 'hl-funding.db')
 
     # Check if the database file exists
     if not os.path.exists(df_path):
-        return HttpResponse("Database file does not exist.")
+        return HttpResponse("dydx database file does not exist.")
+    if not os.path.exists(dfh_path):
+        return HttpResponse("hl database file does not exist.")
 
     connection = sqlite3.connect(df_path)
+    connectionh = sqlite3.connect(dfh_path)
 
     try:
         df = pd.read_sql_query("SELECT * FROM [dydx-funding]", connection)
+        dfh = pd.read_sql_query("SELECT * FROM [hyperliquid-funding]", connectionh)
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}")
     finally:
@@ -45,6 +50,21 @@ def hello(request):
     json_records = dft.reset_index().to_json(orient='records')
     data = []
     data = json.loads(json_records)
+
+    dfh.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
+    dfth = dfh.tail(38)
+    dfth['apy'] = dfth['apy'].multiply(100)
+    dfth['apy'] = dfth['apy'].apply(lambda x: round(x,0))
+    dfth['fundingrate'] = dfth['fundingrate'].multiply(10000)
+    dfth['fundingrate'] = dfth['fundingrate'].apply(lambda x: round(x, 3))
+    # dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD') | (df['market'] == 'SOL-USD')]
+    # dfchart['apy'] = dfchart['apy'].multiply(100)
+    # dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
+    # dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
+    # dfchart['fundingrate'] = dfchart['fundingrate'].apply(lambda x: round(x,3))
+    json_recordsh = dfth.reset_index().to_json(orient='records')
+    datah = []
+    datah = json.loads(json_recordsh)
 
     # Filter data for BTC-USD and ETH-USD
 
