@@ -37,7 +37,7 @@ def hello(request):
         connection.close()
 
     df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dft = df.tail(151)
+    dft = df.tail(38)
     dft['apy'] = dft['apy'].multiply(100)
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
@@ -52,7 +52,7 @@ def hello(request):
     data = json.loads(json_records)
 
     dfh.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dfth = dfh.tail(38)
+    dfth = dfh.tail(151)
     dfth['apy'] = dfth['apy'].multiply(100)
     dfth['apy'] = dfth['apy'].apply(lambda x: round(x,0))
     dfth['fundingrate'] = dfth['fundingrate'].multiply(10000)
