@@ -171,6 +171,7 @@ def hello(request):
     context = {
         'image_url': image_url,
         'd': data,
+        'e': datah,
         'btc_data': btc_json,
         'eth_data': eth_json,
         'sol_data': sol_json,
