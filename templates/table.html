@@ -39,6 +39,36 @@
 	</tbody>
 	</table>
 </div>
+
+<div class="container">
+	<h2 style="color: black; background-color: white;">hyperliquid funding</h2></u>
+	<h2 class="text-center">
+	<u></u></h2>
+	<table class="table table-dark table-striped">
+	<thead>
+	<tr>
+	<th>timestamp (utc)</th>
+	<th>market</th>
+	<th>fundingrate (bp)</th>
+	<th>apy (%)</th>
+	</tr>
+	</thead>
+ 	<tbody>
+		<!-- jinja2 Technique -->
+		{% if e %} 
+		{% for i in e %}
+		<tr>
+			<td>{{i.timestamp}}</td>
+			<td>{{i.market}}</td>
+			<td>{{i.fundingrate}}</td>
+			<td>{{i.apy}}</td>
+		</tr>
+		{% endfor %}
+		{% endif %}
+	</tbody>
+	</table>
+</div>
+
 </body>
 </html>
 
