@@ -4,71 +4,63 @@
   <title>TableView - Startup</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <!-- Bootstrap JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 </head>
 <body>
 
 <div class="container">
-	<h2 style="color: black; background-color: white;">hyperliquid funding</h2></u>
-	<h2 class="text-center">
-	<u></u></h2>
-	<table class="table table-dark table-striped">
-	<thead>
-	<tr>
-	<th>timestamp (utc)</th>
-	<th>market</th>
-	<th>fundingrate (bp)</th>
-	<th>apy (%)</th>
-	</tr>
-	</thead>
-		<tbody>
-		<!-- jinja2 Technique -->
-		{% if e %} 
-		{% for i in e %}
-		<tr>
-			<td>{{i.timestamp}}</td>
-			<td>{{i.market}}</td>
-			<td>{{i.fundingrate}}</td>
-			<td>{{i.apy}}</td>
-		</tr>
-		{% endfor %}
-		{% endif %}
-	</tbody>
-	</table>
+  <h2 style="color: black; background-color: white;">Hyperliquid Funding</h2>
+  <table id="fundingTable" class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th>timestamp (utc)</th>
+        <th>market</th>
+        <th>fundingrate (bp)</th>
+        <th>apy (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if e %} 
+      {% for i in e %}
+      <tr>
+        <td>{{i.timestamp}}</td>
+        <td>{{i.market}}</td>
+        <td>{{i.fundingrate}}</td>
+        <td>{{i.apy}}</td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
 </div>
 
-<!-- <div class="container">
-	<h2 style="color: black; background-color: white;">dydx funding</h2></u>
-	<h2 class="text-center">
-	<u></u></h2>
-	<table class="table table-dark table-striped">
-	<thead>
-	<tr>
-	<th>timestamp (utc)</th>
-	<th>market</th>
-	<th>fundingrate (bp)</th>
-	<th>apy (%)</th>
-	</tr>
-	</thead>
- 	<tbody>
-		{% if d %} 
-		{% for i in d %}
-		<tr>
-			<td>{{i.timestamp}}</td>
-			<td>{{i.market}}</td>
-			<td>{{i.fundingrate}}</td>
-			<td>{{i.apy}}</td>
-		</tr>
-		{% endfor %}
-		{% endif %}
-	</tbody>
-	</table>
-</div> -->
+<script>
+  $(document).ready(function() {
+    // Initialize DataTables with filter/sort/pagination
+    $('#fundingTable').DataTable({
+      paging: true,        // Enables pagination
+      searching: true,     // Enables search/filter
+      ordering: true,      // Enables column sorting
+      info: true,          // Shows table info (e.g., "Showing 1 of 10 entries")
+      order: [[3, 'desc']] // Default sorting: first column (timestamp) in descending order
+    });
+  });
+</script>
 
 </body>
 </html>
-
-
