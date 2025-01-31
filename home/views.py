@@ -16,33 +16,33 @@ def hello(request):
     image_url = static(image_path)
 
     # Construct the relative path to the SQLite database using BASE_DIR
-    df_path = os.path.join(settings.BASE_DIR, 'static', 'dydx-funding.db')
+    # df_path = os.path.join(settings.BASE_DIR, 'static', 'dydx-funding.db')
     dfh_path = os.path.join(settings.BASE_DIR, 'static', 'hl-funding.db')
 
     # Check if the database file exists
-    if not os.path.exists(df_path):
-        return HttpResponse("dydx database file does not exist.")
+    # if not os.path.exists(df_path):
+    #    return HttpResponse("dydx database file does not exist.")
     if not os.path.exists(dfh_path):
         return HttpResponse("hl database file does not exist.")
 
-    connection = sqlite3.connect(df_path)
-    connectionh = sqlite3.connect(dfh_path)
+    # connection = sqlite3.connect(df_path)
+    connection = sqlite3.connect(dfh_path)
 
     try:
-        df = pd.read_sql_query("SELECT * FROM [dydx-funding]", connection)
-        dfh = pd.read_sql_query("SELECT * FROM [hyperliquid-funding]", connectionh)
+        # df = pd.read_sql_query("SELECT * FROM [dydx-funding]", connection)
+        df = pd.read_sql_query("SELECT * FROM [hyperliquid-funding]", connection)
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}")
     finally:
         connection.close()
 
     df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dft = df.tail(38)
+    dft = df.tail(140)
     dft['apy'] = dft['apy'].multiply(100)
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
     dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x, 3))
-    dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD') | (df['market'] == 'SOL-USD')]
+    dfchart = df[(df['market'] == 'ETH') | (df['market'] == 'BTC') | (df['market'] == 'SOL')]
     dfchart['apy'] = dfchart['apy'].multiply(100)
     dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
     dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
@@ -51,26 +51,26 @@ def hello(request):
     data = []
     data = json.loads(json_records)
 
-    dfh.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dfth = dfh.tail(151)
-    dfth['apy'] = dfth['apy'].multiply(100)
-    dfth['apy'] = dfth['apy'].apply(lambda x: round(x,0))
-    dfth['fundingrate'] = dfth['fundingrate'].multiply(10000)
-    dfth['fundingrate'] = dfth['fundingrate'].apply(lambda x: round(x, 3))
+    #dfh.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
+    #dfth = dfh.tail(151)
+    #dfth['apy'] = dfth['apy'].multiply(100)
+    #dfth['apy'] = dfth['apy'].apply(lambda x: round(x,0))
+    #dfth['fundingrate'] = dfth['fundingrate'].multiply(10000)
+    #dfth['fundingrate'] = dfth['fundingrate'].apply(lambda x: round(x, 3))
     # dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD') | (df['market'] == 'SOL-USD')]
     # dfchart['apy'] = dfchart['apy'].multiply(100)
     # dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
     # dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
     # dfchart['fundingrate'] = dfchart['fundingrate'].apply(lambda x: round(x,3))
-    json_recordsh = dfth.reset_index().to_json(orient='records')
-    datah = []
-    datah = json.loads(json_recordsh)
+    #json_recordsh = dfth.reset_index().to_json(orient='records')
+    #datah = []
+    #datah = json.loads(json_recordsh)
 
     # Filter data for BTC-USD and ETH-USD
 
-    df_btc = dfchart[dfchart['market'] == 'BTC-USD']
-    df_eth = dfchart[dfchart['market'] == 'ETH-USD']
-    df_sol = dfchart[dfchart['market'] == 'SOL-USD']
+    df_btc = dfchart[dfchart['market'] == 'BTC']
+    df_eth = dfchart[dfchart['market'] == 'ETH']
+    df_sol = dfchart[dfchart['market'] == 'SOL']
     df_btc_ma = df_btc.copy()
     df_eth_ma = df_eth.copy()
     df_sol_ma = df_sol.copy()
@@ -171,7 +171,7 @@ def hello(request):
     context = {
         'image_url': image_url,
         'd': data,
-        'e': datah,
+        'e': data,
         'btc_data': btc_json,
         'eth_data': eth_json,
         'sol_data': sol_json,
