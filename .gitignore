@@ -27,5 +27,8 @@ bomyenv
 # IDE
 .idea/
 
+# creds file
+creds.yaml
+
 
 
