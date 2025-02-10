@@ -116,8 +116,8 @@ def hello(request):
     connection = sqlite3.connect(btc_db_path)
     try:
         # Read the data from the database (assuming the relevant columns are 'Open Time' and 'Close')
-        df_xbt = pd.read_sql_query('SELECT "Open Time" AS timestamp, "Close" AS btc_spot FROM btc_history', connection)
-        df_xbt.rename(columns={'Open Time': 'timestamp', 'Close': 'btc_spot'}, inplace=True)
+        df_xbt = pd.read_sql_query('SELECT "Open Time" AS timestamp, "Open", "High", "Low", "Close" AS btc_spot FROM btc_history', connection)
+        df_xbt.rename(columns={'Open Time': 'timestamp', 'Close': 'btc_spot', 'Open': 'Open', 'High' : 'High', 'Low': 'Low'}, inplace=True)
         df_xbt['logreturn'] = np.log(df_xbt['btc_spot'] / df_xbt['btc_spot'].shift(1))
         df_xbt['logreturn'] = df_xbt['logreturn'] * 100
         df_xbt['logreturn'] = df_xbt['logreturn'].fillna(0)
@@ -128,8 +128,42 @@ def hello(request):
         df_xbt['timestamp'] = df_xbt['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
         # df_xbt = df_xbt.iloc[10:]
         # print(df_xbt)
-        xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized']].to_dict(orient='list')
+
+
+        df_xbt['close_open'] = np.log(df_xbt['btc_spot'] / df_xbt['Open'])
+        df_xbt['open_close_prev'] = np.log(df_xbt['Open'] / df_xbt['btc_spot'].shift(1))
+        df_xbt['high_low'] = np.log(df_xbt['High'] / df_xbt['Low'])
+
+
+        # 1) Compute daily “Yang-Zhang variance”
+        df_xbt['yz_daily_var'] = (
+            0.34 * df_xbt['close_open']**2 +
+            0.34 * df_xbt['open_close_prev']**2 +
+            0.16 * df_xbt['high_low']**2
+        )
+
+        # 2) Take a 7-day rolling average of that daily variance
+        #    and THEN take the square root to get a standard deviation.
+        df_xbt['btc-1w-realized-yang_zhang'] = (
+            df_xbt['yz_daily_var']
+            .rolling(window=7)
+            .mean()
+            .fillna(0)
+            .pipe(np.sqrt)              # <-- Take the sqrt to convert variance -> stdev
+            * np.sqrt(365.25) * 100     # <-- Annualize and turn into a percentage
+        )
+        
+        df_xbt = df_xbt.iloc[7:]
+        df_xbt['timestamp'] = pd.to_datetime(df_xbt['timestamp'])
+        df_xbt['timestamp'] = df_xbt['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+        xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized', 'btc-1w-realized-yang_zhang']].to_dict(orient='list')
+
+
+        # xbt = df_xbt[['timestamp', 'btc_spot', 'logreturn', 'btc-1w-realized', ]].to_dict(orient='list')
         xbt_json = json.dumps(xbt)
+
+
         # print('now xbt')
     # print(xbt)
     finally:
