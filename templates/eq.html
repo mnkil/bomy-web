@@ -58,7 +58,7 @@
         </div>
         <script>
             // Parse the JSON data passed from the view
-            const spxData = {{ spx_data|safe }};
+            const spxData = {{ spx_data|safe }};  // Remove JSON.parse()
             const labels = spxData.map(item => new Date(item.Date).toISOString().split('T')[0]);
             const lineData = spxData.map(item => item.Close);
             const barData = spxData.map(item => item.pct_change);

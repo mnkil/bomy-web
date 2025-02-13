@@ -261,6 +261,10 @@ def eq_view(request):
 
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
+
+    # Debug print to see what we're sending
+    print("JSON data sample:", spx_data_json[:200])
+    
     context = {
         'image_url': image_url,
         'spx_data': spx_data_json
