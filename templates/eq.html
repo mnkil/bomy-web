@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>bidoffermineyours.com</title>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <style>
+            body, html {
+                z-index: 9999;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 100%; 
+            }
+            .chart-container {
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+        <!-- <link rel="icon" href="{% static 'alpha-inf.ico' %}" type="image/x-icon"> -->
+        <link rel="apple-touch-icon-precomposed"
+            sizes="57x57" href="{% static 'favicon-apple-touch-114.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="114x114" href="{% static 'favicon-apple-touch-114.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="72x72" href="{% static 'favicon-apple-touch-144.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="144x144" href="{% static 'favicon-apple-touch-144.png' %}">
+        <link rel="icon" type="image/vnd.microsoft.icon"
+            sizes="32x32 48x48" href="{% static 'favicon.ico' %}">
+        <link rel="icon" sizes="128x128" href="{% static 'favicon.icns' %}">
+        <link rel="icon" href="{% static 'favicon.png' %}" type="image/x-icon">
+    </head>
+    <body style="background-color: black; color: white;">
+        <h1>bidoffermineyours <span style="font-style: italic;">EQ</span></h1>
+        <div class="centered-image-container">
+            <img src="{{ image_url }}" alt="argh..">
+        </div>
+        <br>
+        <h2 class="text-left" style="color: black; background-color: white;">SPeggs price & returns</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="spxChart"></canvas>
+        </div>
+        <h2 class="text-left" style="color: black; background-color: white;">SPeggs cumulative returns</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="returnsChart"></canvas>
+        </div>
+        <script>
+            // Parse the JSON data passed from the view
+            const spxData = {{ spx_data|safe }};
+            const labels = spxData.map(item => new Date(item.Date).toISOString().split('T')[0]);
+            const lineData = spxData.map(item => item.Close);
+            const barData = spxData.map(item => item.pct_change);
+            const absBarData = spxData.map(item => item.abs_change);
+            const absLineData = spxData.map(item => item.abs_change_ma);
+
+            // Get the context of the canvas element we want to select
+            const ctx = document.getElementById('spxChart').getContext('2d');
+            const spxChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        type: 'line',
+                        label: 'SPeggs close price',
+                        data: lineData,
+                        borderColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'bar',
+                        label: 'daily return %',
+                        data: barData,
+                        backgroundColor: barData.map(value => 
+                            value > 0 ? 'rgba(75, 192, 75, 0.3)' : 'rgba(192, 75, 75, 0.3)'
+                        ),
+                        yAxisID: 'y1'
+                    },
+                    {
+                        type: 'bar',
+                        label: 'absolute return %',
+                        data: absBarData,
+                        backgroundColor: 'rgba(0, 255, 127, 1)',
+                        yAxisID: 'y1',
+                        hidden: true  // Hidden by default
+                    },
+                    {
+                        type: 'line',
+                        label: 'abs return ma',
+                        data: absLineData,
+                        borderColor: 'rgba(0, 255, 127, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'y1',
+                        hidden: true  // Hidden by default
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    if (context.dataset.type === 'bar') {
+                                        return `daily return: ${context.raw.toFixed(2)}%`;
+                                    }
+                                    return `SPeggs: ${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Modified returns chart with zoom
+            const ctx2 = document.getElementById('returnsChart').getContext('2d');
+            const returnsChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        type: 'line',
+                        label: 'cummulative log return',
+                        data: spxData.map(item => item.cum_total_return),
+                        borderColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                    {
+                        type: 'line',
+                        label: 'overnight return',
+                        data: spxData.map(item => item.cum_overnight),
+                        borderColor: 'rgba(75, 192, 75, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                    {
+                        type: 'line',
+                        label: 'rth return',
+                        data: spxData.map(item => item.cum_session),
+                        borderColor: 'rgba(192, 75, 75, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+        {# {% include "header.html" %} #}
+        {# {% include "table.html" %} #}
+        {# {% include "chart.html" %} #}
+    </body>
+</html>
