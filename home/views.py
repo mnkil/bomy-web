@@ -12,6 +12,7 @@ import os
 import yfinance as yf
 from datetime import datetime, timedelta
 from django.http import JsonResponse
+from .models import Visit
 
 # Create your views here.
 def hello(request):
@@ -278,26 +279,17 @@ def get_visits(request):
     try:
         # Get parameters
         days = int(request.GET.get('days', 7))  # Default to 7 days
-        log_file = os.path.join(settings.BASE_DIR, 'logs', 'visits.log')
-        
-        # Read and parse log file
-        visits = []
         cutoff_date = datetime.now() - timedelta(days=days)
         
-        with open(log_file, 'r') as f:
-            for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    entry_date = datetime.fromisoformat(entry['timestamp'])
-                    if entry_date >= cutoff_date:
-                        visits.append(entry)
-                except:
-                    continue
+        # Query the database
+        visits = Visit.objects.filter(
+            timestamp__gte=cutoff_date
+        ).values('timestamp', 'path', 'ip')
         
         return JsonResponse({
             'status': 'success',
-            'data': visits,
-            'count': len(visits)
+            'data': list(visits),
+            'count': visits.count()
         })
     except Exception as e:
         return JsonResponse({

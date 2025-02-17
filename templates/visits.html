@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Visit Statistics</h1>
+    
+    <div class="mb-3">
+        <select id="dayFilter" class="form-select" style="width: 200px">
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+        </select>
+    </div>
+
+    <div id="visits-data" class="mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Visits</h5>
+                        <h2 id="totalVisits">Loading...</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Visits</h5>
+                        <div id="visitsList">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Path</th>
+                                        <th>IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fetchVisits(days) {
+    fetch(`/api/visits/?days=${days}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update total visits
+                document.getElementById('totalVisits').textContent = data.count;
+
+                // Clear existing table rows
+                const tableBody = document.getElementById('visitsTableBody');
+                tableBody.innerHTML = '';
+
+                // Sort visits by timestamp in descending order
+                const sortedVisits = data.data.sort((a, b) => 
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                );
+
+                // Add new rows
+                sortedVisits.forEach(visit => {
+                    const row = document.createElement('tr');
+                    const time = new Date(visit.timestamp).toLocaleString();
+                    row.innerHTML = `
+                        <td>${time}</td>
+                        <td>${visit.path}</td>
+                        <td>${visit.ip}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching visits:', error);
+            document.getElementById('totalVisits').textContent = 'Error loading data';
+        });
+}
+
+// Initial load
+fetchVisits(7);
+
+// Add event listener for day filter
+document.getElementById('dayFilter').addEventListener('change', function(e) {
+    fetchVisits(e.target.value);
+});
+</script>
+{% endblock %} 

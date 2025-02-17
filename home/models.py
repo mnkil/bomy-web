@@ -13,3 +13,11 @@ class TriviaQuestion(models.Model):
 
 def __str__(self):
 	return self.question_text
+
+class Visit(models.Model):
+	timestamp = models.DateTimeField(auto_now_add=True)
+	path = models.CharField(max_length=255)
+	ip = models.GenericIPAddressField()
+	
+	class Meta:
+		ordering = ['-timestamp']
