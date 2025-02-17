@@ -60,7 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # 'home.middleware.VisitLogMiddleware',  # Uncomment after testing
+    'home.middleware.VisitLogMiddleware',  # Make sure this is uncommented
 ]
 
 ROOT_URLCONF = "sofitas.urls"

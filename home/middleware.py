@@ -20,27 +20,25 @@ class VisitLogMiddleware:
         return ip
 
     def __call__(self, request):
-        # Close any stale connections before processing
+        logger.warning("Middleware called")  # Debug log
         close_old_connections()
         
         response = self.get_response(request)
         
         try:
             ip = self.get_client_ip(request)
-            # Use atomic transaction
+            logger.warning(f"Got IP: {ip}")  # Debug log
             with transaction.atomic():
-                Visit.objects.create(
+                visit = Visit.objects.create(
                     path=request.path,
                     ip=ip
                 )
-        except OperationalError as e:
+                logger.warning(f"Created visit: {visit.id}")  # Debug log
+        except OperationalError as e:   
             logger.warning(f"Database write failed: {e}")
-            pass
         except Exception as e:
             logger.warning(f"Visit logging failed: {e}")
-            pass
         finally:
-            # Ensure connections are closed
             close_old_connections()
         
         return response
