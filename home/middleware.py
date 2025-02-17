@@ -1,14 +1,26 @@
 import json
 from datetime import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 
+# Setup logger
 logger = logging.getLogger(__name__)
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
 VISIT_LOG_PATH = os.path.join(LOG_DIR, 'visits.log')
 
 # Ensure log directory exists
 os.makedirs(LOG_DIR, exist_ok=True)
+
+# Configure the rotating file handler
+visit_handler = RotatingFileHandler(
+    VISIT_LOG_PATH,
+    maxBytes=1024 * 1024,  # 1MB
+    backupCount=3  # Keep 3 backup files
+)
+visit_logger = logging.getLogger('visits')
+visit_logger.addHandler(visit_handler)
+visit_logger.setLevel(logging.INFO)
 
 class VisitLogMiddleware:
     def __init__(self, get_response):
@@ -33,9 +45,8 @@ class VisitLogMiddleware:
                 'ip': ip
             }
             
-            # Write to log file
-            with open(VISIT_LOG_PATH, 'a') as f:
-                f.write(json.dumps(visit_data) + '\n')
+            # Log the visit
+            visit_logger.info(json.dumps(visit_data))
                 
         except Exception as e:
             logger.error(f"Visit logging failed: {e}")
