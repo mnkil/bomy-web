@@ -6,7 +6,7 @@ import os
 
 # Setup logger
 logger = logging.getLogger(__name__)
-LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+LOG_DIR = '/var/log/bomy-web'
 VISIT_LOG_PATH = os.path.join(LOG_DIR, 'visits.log')
 
 # Ensure log directory exists
