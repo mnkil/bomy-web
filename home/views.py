@@ -283,21 +283,28 @@ def get_visits(request):
         days = int(request.GET.get('days', 7))
         cutoff_date = datetime.now() - timedelta(days=days)
         
-        # Get path to log file
-        log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
-        log_path = os.path.join(log_dir, 'visits.log')
+        # Update path to new log location
+        log_path = '/var/log/bomy-web/visits.log'
         
         visits = []
-        if os.path.exists(log_path):
-            with open(log_path, 'r') as f:
-                for line in f:
-                    try:
-                        visit = json.loads(line.strip())
-                        visit_date = datetime.fromisoformat(visit['timestamp'])
-                        if visit_date >= cutoff_date:
-                            visits.append(visit)
-                    except:
-                        continue
+        # Read from main log file and all rotated files
+        log_files = [log_path]
+        for i in range(1, 4):  # Check .1, .2, .3 backup files
+            backup = f"{log_path}.{i}"
+            if os.path.exists(backup):
+                log_files.append(backup)
+                
+        for log_file in log_files:
+            if os.path.exists(log_file):
+                with open(log_file, 'r') as f:
+                    for line in f:
+                        try:
+                            visit = json.loads(line.strip())
+                            visit_date = datetime.fromisoformat(visit['timestamp'])
+                            if visit_date >= cutoff_date:
+                                visits.append(visit)
+                        except:
+                            continue
         
         return JsonResponse({
             'status': 'success',
