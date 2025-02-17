@@ -283,14 +283,26 @@ def get_visits(request):
         days = int(request.GET.get('days', 7))
         cutoff_date = datetime.now() - timedelta(days=days)
         
-        visits = Visit.objects.filter(
-            timestamp__gte=cutoff_date
-        ).values('timestamp', 'path', 'ip')
+        # Get path to log file
+        log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+        log_path = os.path.join(log_dir, 'visits.log')
+        
+        visits = []
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                for line in f:
+                    try:
+                        visit = json.loads(line.strip())
+                        visit_date = datetime.fromisoformat(visit['timestamp'])
+                        if visit_date >= cutoff_date:
+                            visits.append(visit)
+                    except:
+                        continue
         
         return JsonResponse({
             'status': 'success',
-            'data': list(visits),
-            'count': visits.count()
+            'data': visits,
+            'count': len(visits)
         })
     except Exception as e:
         return JsonResponse({
