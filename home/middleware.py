@@ -1,11 +1,14 @@
 import json
 from datetime import datetime
-from .models import Visit
 import logging
 import os
 
 logger = logging.getLogger(__name__)
-VISIT_LOG_PATH = '/var/log/bomy-web/visits.log'
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+VISIT_LOG_PATH = os.path.join(LOG_DIR, 'visits.log')
+
+# Ensure log directory exists
+os.makedirs(LOG_DIR, exist_ok=True)
 
 class VisitLogMiddleware:
     def __init__(self, get_response):
@@ -33,8 +36,6 @@ class VisitLogMiddleware:
             # Write to log file
             with open(VISIT_LOG_PATH, 'a') as f:
                 f.write(json.dumps(visit_data) + '\n')
-                
-            logger.warning(f"Logged visit to file: {ip}")
                 
         except Exception as e:
             logger.error(f"Visit logging failed: {e}")
