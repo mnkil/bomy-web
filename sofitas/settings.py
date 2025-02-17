@@ -35,7 +35,7 @@ else:
 	print('DEBUG MODE')
 
 # ALLOWED_HOSTS = ['3.121.206.205', '3.68.57.234', '0.0.0.0', 'bidoffermineyours.com','127.0.0.1']]
-ALLOWED_HOSTS = ['bidoffermineyours.com', 'www.bidoffermineyours.com', '3.68.57.234', '127.0.0.1']
+ALLOWED_HOSTS = ['bidoffermineyours.com', 'www.bidoffermineyours.com', '3.68.57.234', '127.0.0.1', 'localhost']
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -60,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'home.middleware.VisitLogMiddleware',
 ]
 
 ROOT_URLCONF = "sofitas.urls"
@@ -139,3 +140,30 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Add to your existing settings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'visits.log'),
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'home.middleware': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

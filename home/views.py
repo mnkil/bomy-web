@@ -10,7 +10,8 @@ import numpy as np
 import sqlite3
 import os
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.http import JsonResponse
 
 # Create your views here.
 def hello(request):
@@ -271,3 +272,38 @@ def eq_view(request):
     }
 
     return render(request, 'eq.html', context)
+
+def get_visits(request):
+    """API endpoint to get visit logs"""
+    try:
+        # Get parameters
+        days = int(request.GET.get('days', 7))  # Default to 7 days
+        log_file = os.path.join(settings.BASE_DIR, 'logs', 'visits.log')
+        
+        # Read and parse log file
+        visits = []
+        cutoff_date = datetime.now() - timedelta(days=days)
+        
+        with open(log_file, 'r') as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    entry_date = datetime.fromisoformat(entry['timestamp'])
+                    if entry_date >= cutoff_date:
+                        visits.append(entry)
+                except:
+                    continue
+        
+        return JsonResponse({
+            'status': 'success',
+            'data': visits,
+            'count': len(visits)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+def visits_view(request):
+    return render(request, 'visits.html')
