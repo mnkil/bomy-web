@@ -52,19 +52,14 @@ function fetchVisits(days) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Update total visits
                 document.getElementById('totalVisits').textContent = data.count;
-
-                // Clear existing table rows
                 const tableBody = document.getElementById('visitsTableBody');
                 tableBody.innerHTML = '';
-
-                // Sort visits by timestamp in descending order
+                
                 const sortedVisits = data.data.sort((a, b) => 
                     new Date(b.timestamp) - new Date(a.timestamp)
                 );
 
-                // Add new rows
                 sortedVisits.forEach(visit => {
                     const row = document.createElement('tr');
                     const time = new Date(visit.timestamp).toLocaleString();
@@ -78,7 +73,7 @@ function fetchVisits(days) {
             }
         })
         .catch(error => {
-            console.error('Error fetching visits:', error);
+            console.error('Error:', error);
             document.getElementById('totalVisits').textContent = 'Error loading data';
         });
 }

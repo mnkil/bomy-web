@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from .models import Visit
+from django.db.utils import OperationalError
 
 class VisitLogMiddleware:
     def __init__(self, get_response):
@@ -9,10 +10,13 @@ class VisitLogMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         
-        # Log the visit to database
-        Visit.objects.create(
-            path=request.path,
-            ip=request.META.get('REMOTE_ADDR', '')
-        )
+        try:
+            Visit.objects.create(
+                path=request.path,
+                ip=request.META.get('REMOTE_ADDR', '')
+            )
+        except Exception:
+            # Fail silently to not disrupt the main application
+            pass
         
         return response 

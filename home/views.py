@@ -224,6 +224,9 @@ def hello(request):
     return render(request, 'hello.html', context)
 
 def eq_view(request):
+    # Consider caching the data
+    # Or processing it in smaller chunks
+    # Or using async processing
     # Fetch data for ^SPX
     now = datetime.now()
     tomorrow = now + pd.Timedelta(days=1)
@@ -277,11 +280,9 @@ def eq_view(request):
 def get_visits(request):
     """API endpoint to get visit logs"""
     try:
-        # Get parameters
-        days = int(request.GET.get('days', 7))  # Default to 7 days
+        days = int(request.GET.get('days', 7))
         cutoff_date = datetime.now() - timedelta(days=days)
         
-        # Query the database
         visits = Visit.objects.filter(
             timestamp__gte=cutoff_date
         ).values('timestamp', 'path', 'ip')
