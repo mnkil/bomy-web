@@ -13,6 +13,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from .models import Visit
+import requests
 
 # Create your views here.
 def hello(request):
@@ -232,9 +233,19 @@ def eq_view(request):
     tomorrow = now + pd.Timedelta(days=1)
     end = tomorrow.strftime("%Y-%m-%d")
     print(f'end: {end}')
+    session = requests.Session()
+
+    # Update the User-Agent header
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+                    AppleWebKit/537.36 (KHTML, like Gecko) \
+                    Chrome/98.0.4758.102 Safari/537.36"
+    })
+
+    # Now 
     def yfd(ticker, start='2024-06-01', end=end):
         ticker_symbol = ticker
-        yf_data = yf.Ticker(ticker_symbol)
+        yf_data = yf.Ticker(ticker_symbol, session=session)
         if not start:
             start = "2023-01-01"
         if not end:
