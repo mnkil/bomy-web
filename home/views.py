@@ -243,7 +243,7 @@ def eq_view(request):
     })
 
     # Now 
-    def yfd(ticker, start='2024-06-01', end=end):
+    def yfd(ticker, start='2024-06-01', end=end, session=session):
         ticker_symbol = ticker
         yf_data = yf.Ticker(ticker_symbol, session=session)
         if not start:
