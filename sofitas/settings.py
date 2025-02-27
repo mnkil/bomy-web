@@ -23,6 +23,8 @@ template_dir = BASE_DIR / "templates"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-ji^r!g&jg(-m_ms0jrbui$(lbsm%7fp5_*))l9vrfv1p(*7x*#"
 
+POLYGON_API_KEY = os.getenv('KEY_POLYGON', '')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 if DEBUG == False:

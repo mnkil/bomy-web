@@ -234,7 +234,11 @@ def eq_view(request):
     tomorrow = now + pd.Timedelta(days=1)
     end = tomorrow.strftime("%Y-%m-%d")
 
-    api_key = os.getenv('KEY_POLYGON')
+    api_key = getattr(settings, 'POLYGON_API_KEY', None)
+    if not api_key:
+        logger.error("Polygon API key not found in settings")
+        return HttpResponse("API key not configured", status=500)
+        
     logger.info(f"Using Polygon API key: {api_key[:4]}..." if api_key else "No API key found")
     
     ticker = "I:SPX"
