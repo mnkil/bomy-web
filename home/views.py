@@ -225,65 +225,74 @@ def hello(request):
     return render(request, 'hello.html', context)
 
 def eq_view(request):
-    # Consider caching the data
-    # Or processing it in smaller chunks
-    # Or using async processing
-    # Fetch data for ^SPX
     now = datetime.now()
     tomorrow = now + pd.Timedelta(days=1)
     end = tomorrow.strftime("%Y-%m-%d")
-    print(f'end: {end}')
-    session = requests.Session()
 
-    # Update the User-Agent header
-    session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-                    AppleWebKit/537.36 (KHTML, like Gecko) \
-                    Chrome/98.0.4758.102 Safari/537.36"
-    })
+    api_key = os.getenv('KEY_POLYGON')
+    ticker = "I:SPX"
+    start_date = "2024-06-01"
+    end_date = end
 
-    # Now 
-    def yfd(ticker, start='2024-06-01', end=end, session=session):
-        ticker_symbol = ticker
-        yf_data = yf.Ticker(ticker_symbol, session=session)
-        if not start:
-            start = "2023-01-01"
-        if not end:
-            now = datetime.now()
-            tomorrow = now + pd.Timedelta(days=1)
-            end = tomorrow.strftime("%Y-%m-%d")
-        hist_data = yf_data.history(start=start, end=end, auto_adjust=False)
-        return hist_data
+    url = f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{start_date}/{end_date}"
+    params = {
+        "adjusted": "true",
+        "sort": "asc",
+        "limit": 50000,
+        "apiKey": api_key
+    }
 
-    spx_data = yfd('^SPX')
-    
-    # Calculate daily returns and absolute returns
-    spx_data['pct_change'] = spx_data['Close'].pct_change() * 100
-    spx_data['abs_change'] = spx_data['pct_change'].abs()  # Add absolute returns
-    spx_data['abs_change_ma'] = spx_data['abs_change'].rolling(window=20).mean()  # 20-day moving average
-    
-    # Calculate overnight and session log returns
-    spx_data['overnight_return'] = np.log(spx_data['Open'] / spx_data['Close'].shift(1)) * 100
-    spx_data['session_return'] = np.log(spx_data['Close'] / spx_data['Open']) * 100
-    
-    # Calculate cumulative returns
-    spx_data['cum_total_return'] = np.log(spx_data['Close'] / spx_data['Close'].iloc[0]) * 100
-    spx_data['cum_overnight'] = spx_data['overnight_return'].cumsum()
-    spx_data['cum_session'] = spx_data['session_return'].cumsum()
-    
-    # Include all necessary data in JSON
-    spx_data_json = spx_data[['Close', 'pct_change', 'abs_change', 'abs_change_ma', 
-                             'cum_total_return', 'cum_overnight', 'cum_session']].reset_index().to_json(orient='records', date_format='iso')
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        results = data.get("results", [])
+        
+        records = []
+        for bar in results:
+            date = pd.to_datetime(bar["t"], unit='ms')
+            records.append({
+                "Date": date,
+                "Open": bar["o"],
+                "High": bar["h"],
+                "Low": bar["l"],
+                "Close": bar["c"]
+            })
+        
+        # Convert to DataFrame and set Date as index
+        df = pd.DataFrame(records)
+        df.set_index('Date', inplace=True)
+        
+        # Calculate metrics
+        df['pct_change'] = df['Close'].pct_change() * 100
+        df['abs_change'] = df['pct_change'].abs()
+        df['abs_change_ma'] = df['abs_change'].rolling(window=20).mean()
+        
+        df['overnight_return'] = np.log(df['Open'] / df['Close'].shift(1)) * 100
+        df['session_return'] = np.log(df['Close'] / df['Open']) * 100
+        
+        df['cum_total_return'] = np.log(df['Close'] / df['Close'].iloc[0]) * 100
+        df['cum_overnight'] = df['overnight_return'].cumsum()
+        df['cum_session'] = df['session_return'].cumsum()
+        
+        # Reset index and format dates
+        df_json = df.reset_index()
+        df_json['Date'] = df_json['Date'].dt.strftime('%Y-%m-%d')
+        
+        # Convert to JSON with proper date formatting
+        spx_data_json = df_json.to_dict(orient='records')
+        
+    else:
+        print(f"Request failed with status code: {response.status_code}")
+        print(response.text)
+        spx_data_json = []
 
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
-
-    # Debug print to see what we're sending
-    print("JSON data sample:", spx_data_json[:200])
     
     context = {
         'image_url': image_url,
-        'spx_data': spx_data_json
+        'spx_data': json.dumps(spx_data_json)
     }
 
     return render(request, 'eq.html', context)

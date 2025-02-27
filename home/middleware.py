@@ -3,10 +3,17 @@ from datetime import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from django.conf import settings
 
 # Setup logger
 logger = logging.getLogger(__name__)
-LOG_DIR = '/var/log/bomy-web'
+
+# Define log directories based on environment
+if settings.DEBUG:
+    LOG_DIR = os.path.join(settings.BASE_DIR, 'logs')
+else:
+    LOG_DIR = '/var/log/bomy-web'
+
 VISIT_LOG_PATH = os.path.join(LOG_DIR, 'visits.log')
 
 # Ensure log directory exists

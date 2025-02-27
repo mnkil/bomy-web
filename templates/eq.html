@@ -22,6 +22,9 @@
             }
         </style>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Load jQuery first -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <!-- Then Bootstrap and other dependencies -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
@@ -58,8 +61,8 @@
         </div>
         <script>
             // Parse the JSON data passed from the view
-            const spxData = {{ spx_data|safe }};  // Remove JSON.parse()
-            const labels = spxData.map(item => new Date(item.Date).toISOString().split('T')[0]);
+            const spxData = {{ spx_data|safe }};
+            const labels = spxData.map(item => item.Date);  // Use the formatted date directly
             const lineData = spxData.map(item => item.Close);
             const barData = spxData.map(item => item.pct_change);
             const absBarData = spxData.map(item => item.abs_change);
@@ -76,9 +79,11 @@
                         label: 'SPeggs close price',
                         data: lineData,
                         borderColor: 'rgba(255, 165, 0, 1)',
-                        borderWidth: 1,
+                        backgroundColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 4,
                         fill: false,
-                        yAxisID: 'y'
+                        yAxisID: 'y',
+                        pointRadius: 0
                     },
                     {
                         type: 'bar',
@@ -87,7 +92,8 @@
                         backgroundColor: barData.map(value => 
                             value > 0 ? 'rgba(75, 192, 75, 0.3)' : 'rgba(192, 75, 75, 0.3)'
                         ),
-                        yAxisID: 'y1'
+                        yAxisID: 'y1',
+                        pointRadius: 0
                     },
                     {
                         type: 'bar',
@@ -95,6 +101,7 @@
                         data: absBarData,
                         backgroundColor: 'rgba(0, 255, 127, 1)',
                         yAxisID: 'y1',
+                        pointRadius: 0,
                         hidden: true  // Hidden by default
                     },
                     {
@@ -102,9 +109,11 @@
                         label: 'abs return ma',
                         data: absLineData,
                         borderColor: 'rgba(0, 255, 127, 1)',
+                        backgroundColor: 'rgba(0, 255, 127, 1)',
                         borderWidth: 2,
                         fill: false,
                         yAxisID: 'y1',
+                        pointRadius: 0,
                         hidden: true  // Hidden by default
                     }]
                 },
@@ -144,6 +153,12 @@
                         }
                     },
                     plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 title: function(context) {
@@ -172,24 +187,30 @@
                         label: 'cummulative log return',
                         data: spxData.map(item => item.cum_total_return),
                         borderColor: 'rgba(255, 165, 0, 1)',
-                        borderWidth: 2,
-                        fill: false
+                        backgroundColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
                     },
                     {
                         type: 'line',
                         label: 'overnight return',
                         data: spxData.map(item => item.cum_overnight),
                         borderColor: 'rgba(75, 192, 75, 1)',
-                        borderWidth: 2,
-                        fill: false
+                        backgroundColor: 'rgba(75, 192, 75, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
                     },
                     {
                         type: 'line',
                         label: 'rth return',
                         data: spxData.map(item => item.cum_session),
                         borderColor: 'rgba(192, 75, 75, 1)',
-                        borderWidth: 2,
-                        fill: false
+                        backgroundColor: 'rgba(192, 75, 75, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
                     }]
                 },
                 options: {
@@ -219,6 +240,12 @@
                         }
                     },
                     plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 title: function(context) {
