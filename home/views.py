@@ -234,6 +234,12 @@ def eq_view(request):
     tomorrow = now + pd.Timedelta(days=1)
     end = tomorrow.strftime("%Y-%m-%d")
 
+    # Debug logging
+    env_api_key = os.getenv('KEY_POLYGON')
+    settings_api_key = getattr(settings, 'POLYGON_API_KEY', None)
+    logger.error(f"Environment KEY_POLYGON: {env_api_key}")
+    logger.error(f"Settings POLYGON_API_KEY: {settings_api_key}")
+    
     api_key = getattr(settings, 'POLYGON_API_KEY', None)
     if not api_key:
         logger.error("Polygon API key not found in settings")
