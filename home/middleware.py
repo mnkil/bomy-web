@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 # Define log directories based on environment
 if settings.DEBUG:
-    LOG_DIR = os.path.join(settings.BASE_DIR, 'logs')
+    try:    
+        LOG_DIR = os.path.join(settings.BASE_DIR, 'logs')
+    except:
+        LOG_DIR = '/var/log/bomy-web'
 else:
     LOG_DIR = '/var/log/bomy-web'
 
