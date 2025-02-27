@@ -14,6 +14,11 @@ from datetime import datetime, timedelta
 from django.http import JsonResponse
 from .models import Visit
 import requests
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Setup logger for views
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 def hello(request):
@@ -230,6 +235,8 @@ def eq_view(request):
     end = tomorrow.strftime("%Y-%m-%d")
 
     api_key = os.getenv('KEY_POLYGON')
+    logger.info(f"Using Polygon API key: {api_key[:4]}..." if api_key else "No API key found")
+    
     ticker = "I:SPX"
     start_date = "2024-06-01"
     end_date = end
@@ -247,6 +254,7 @@ def eq_view(request):
     if response.status_code == 200:
         data = response.json()
         results = data.get("results", [])
+        logger.info(f"Successfully retrieved {len(results)} records from Polygon API")
         
         records = []
         for bar in results:
@@ -283,8 +291,8 @@ def eq_view(request):
         spx_data_json = df_json.to_dict(orient='records')
         
     else:
-        print(f"Request failed with status code: {response.status_code}")
-        print(response.text)
+        logger.error(f"Polygon API request failed with status code: {response.status_code}")
+        logger.error(f"Response text: {response.text}")
         spx_data_json = []
 
     image_path = 'tramdepot.jpeg'
