@@ -59,9 +59,20 @@
         <div class="chart-container" style="width:100%">
             <canvas id="returnsChart"></canvas>
         </div>
+        <h2 class="text-left" style="color: black; background-color: white;">SPY vs FEZ cumulative returns</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="etfChart"></canvas>
+        </div>
+        <h2 class="text-left" style="color: black; background-color: white;">SPY - FEZ cumulative return difference</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="diffChart"></canvas>
+        </div>
         <script>
             // Parse the JSON data passed from the view
             const spxData = {{ spx_data|safe }};
+            const spyData = {{ spy_data|safe }};
+            const fezData = {{ fez_data|safe }};
+            const diffData = {{ diff_data|safe }};
             const labels = spxData.map(item => item.Date);  // Use the formatted date directly
             const lineData = spxData.map(item => item.Close);
             const barData = spxData.map(item => item.pct_change);
@@ -253,6 +264,147 @@
                                 },
                                 label: function(context) {
                                     return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ETF comparison chart
+            const ctx3 = document.getElementById('etfChart').getContext('2d');
+            const etfChart = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: spyData.map(item => item.Date),
+                    datasets: [{
+                        type: 'line',
+                        label: 'SPY cumulative return',
+                        data: spyData.map(item => item.cum_return),
+                        borderColor: 'rgba(255, 165, 0, 1)',
+                        backgroundColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        type: 'line',
+                        label: 'FEZ cumulative return',
+                        data: fezData.map(item => item.cum_return),
+                        borderColor: 'rgba(75, 192, 75, 1)',
+                        backgroundColor: 'rgba(75, 192, 75, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Return difference chart
+            const ctx4 = document.getElementById('diffChart').getContext('2d');
+            const diffChart = new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: diffData.map(item => item.Date),
+                    datasets: [{
+                        type: 'line',
+                        label: 'SPY - FEZ cumulative return difference',
+                        data: diffData.map(item => item.return_diff),
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    return `Difference: ${context.raw.toFixed(2)}%`;
                                 }
                             }
                         }

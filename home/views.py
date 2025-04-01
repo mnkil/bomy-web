@@ -247,6 +247,7 @@ def eq_view(request):
         
     logger.info(f"Using Polygon API key: {api_key[:4]}..." if api_key else "No API key found")
     
+    # Fetch SPX data
     ticker = "I:SPX"
     start_date = "2024-06-01"
     end_date = end
@@ -305,12 +306,69 @@ def eq_view(request):
         logger.error(f"Response text: {response.text}")
         spx_data_json = []
 
+    # Fetch SPY and FEZ data
+    etfs = ["SPY", "FEZ"]
+    etf_data = {}
+    
+    for etf in etfs:
+        url = f"https://api.polygon.io/v2/aggs/ticker/{etf}/range/1/day/{start_date}/{end_date}"
+        params = {
+            "adjusted": "true",
+            "sort": "asc",
+            "limit": 50000,
+            "apiKey": api_key
+        }
+        
+        response = requests.get(url, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get("results", [])
+            
+            records = []
+            for bar in results:
+                date = pd.to_datetime(bar["t"], unit='ms')
+                records.append({
+                    "Date": date,
+                    "Close": bar["c"]
+                })
+            
+            # Convert to DataFrame and calculate cumulative returns
+            df_etf = pd.DataFrame(records)
+            df_etf.set_index('Date', inplace=True)
+            df_etf['cum_return'] = np.log(df_etf['Close'] / df_etf['Close'].iloc[0]) * 100
+            
+            # Reset index and format dates
+            df_etf_json = df_etf.reset_index()
+            df_etf_json['Date'] = df_etf_json['Date'].dt.strftime('%Y-%m-%d')
+            
+            etf_data[etf] = df_etf_json.to_dict(orient='records')
+        else:
+            logger.error(f"Polygon API request failed for {etf} with status code: {response.status_code}")
+            etf_data[etf] = []
+
+    # Calculate the difference between SPY and FEZ returns
+    if etf_data['SPY'] and etf_data['FEZ']:
+        spy_df = pd.DataFrame(etf_data['SPY'])
+        fez_df = pd.DataFrame(etf_data['FEZ'])
+        
+        # Merge the dataframes on Date
+        merged_df = pd.merge(spy_df, fez_df, on='Date', suffixes=('_spy', '_fez'))
+        merged_df['return_diff'] = merged_df['cum_return_spy'] - merged_df['cum_return_fez']
+        
+        etf_data['DIFF'] = merged_df[['Date', 'return_diff']].to_dict(orient='records')
+    else:
+        etf_data['DIFF'] = []
+
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
     
     context = {
         'image_url': image_url,
-        'spx_data': json.dumps(spx_data_json)
+        'spx_data': json.dumps(spx_data_json),
+        'spy_data': json.dumps(etf_data['SPY']),
+        'fez_data': json.dumps(etf_data['FEZ']),
+        'diff_data': json.dumps(etf_data['DIFF'])
     }
 
     return render(request, 'eq.html', context)
