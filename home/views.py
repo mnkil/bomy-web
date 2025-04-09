@@ -179,12 +179,21 @@ def hello(request):
     finally:
         connection.close()
     # btc atm data
-    df_btc_atm_path = 'home/ubuntu/bomy-web/static/btcatm_latest.pickle'
+    btc_atm_db_path = 'home/ubuntu/bomy-web/static/btcatm_latest.db'
     try:
-        df_btc_atm = pd.read_pickle(df_btc_atm_path)
-    except FileNotFoundError:
-        df_btc_atm_path = '~/bomy-web/static/btcatm_latest.pickle'
-        df_btc_atm = pd.read_pickle(df_btc_atm_path)
+        conn = sqlite3.connect(btc_atm_db_path)
+        df_btc_atm = pd.read_sql_query("SELECT * FROM btcatm", conn)
+        conn.close()
+    except:
+        btc_atm_db_path = '/Users/michaelkilchenmann/bomy-web/static/btcatm_latest.db'
+        conn = sqlite3.connect(btc_atm_db_path)
+        df_btc_atm = pd.read_sql_query("SELECT * FROM btcatm", conn)
+        conn.close()
+    
+    # Convert timestamp columns to datetime
+    df_btc_atm['expiration_timestamp'] = pd.to_datetime(df_btc_atm['expiration_timestamp'])
+    df_btc_atm['timestamp'] = pd.to_datetime(df_btc_atm['timestamp'])
+    
     df_btc_atm['mid_iv'] = (df_btc_atm['bid_iv'] + df_btc_atm['ask_iv']) / 2
     # Assuming 'df' is your DataFrame
 
