@@ -316,7 +316,7 @@ def eq_view(request):
         spx_data_json = []
 
     # Fetch SPY and FEZ data
-    etfs = ["SPY", "FEZ"]
+    etfs = ["SPY", "FEZ", "IWM", "QQQ"]
     etf_data = {}
     
     for etf in etfs:
@@ -369,6 +369,19 @@ def eq_view(request):
     else:
         etf_data['DIFF'] = []
 
+    # Calculate the difference between SPY and FEZ returns
+    if etf_data['SPY'] and etf_data['IWM']:
+        spy_df = pd.DataFrame(etf_data['SPY'])
+        iwm_df = pd.DataFrame(etf_data['IWM'])
+        
+        # Merge the dataframes on Date
+        merged_df = pd.merge(spy_df, iwm_df, on='Date', suffixes=('_spy', '_iwm'))
+        merged_df['return_diff_spy_iwm'] = merged_df['cum_return_spy'] - merged_df['cum_return_iwm']
+        
+        etf_data['SPYIWMDIFF'] = merged_df[['Date', 'return_diff_spy_iwm']].to_dict(orient='records')
+    else:
+        etf_data['SPYIWMDIFF'] = []
+
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
     
@@ -377,7 +390,10 @@ def eq_view(request):
         'spx_data': json.dumps(spx_data_json),
         'spy_data': json.dumps(etf_data['SPY']),
         'fez_data': json.dumps(etf_data['FEZ']),
-        'diff_data': json.dumps(etf_data['DIFF'])
+        'iwm_data': json.dumps(etf_data['IWM']),
+        'qqq_data': json.dumps(etf_data['QQQ']),
+        'diff_data': json.dumps(etf_data['DIFF']),
+        'diffspyiwm_data': json.dumps(etf_data['SPYIWMDIFF'])
     }
 
     return render(request, 'eq.html', context)

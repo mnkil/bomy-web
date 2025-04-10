@@ -67,12 +67,22 @@
         <div class="chart-container" style="width:100%">
             <canvas id="diffChart"></canvas>
         </div>
+        <h2 class="text-left" style="color: black; background-color: white;">SPY, IWM, QQQ, FEZ cumulative returns</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="etfComparisonChart"></canvas>
+        </div>
+        <h2 class="text-left" style="color: black; background-color: white;">SPY - IWM cumulative returns</h2>
+        <div class="chart-container" style="width:100%">
+            <canvas id="spyIwmDiffChart"></canvas>
+        </div>
         <script>
             // Parse the JSON data passed from the view
             const spxData = {{ spx_data|safe }};
             const spyData = {{ spy_data|safe }};
             const fezData = {{ fez_data|safe }};
             const diffData = {{ diff_data|safe }};
+            const iwmData = {{ iwm_data|safe }};
+            const qqqData = {{ qqq_data|safe }};
             const labels = spxData.map(item => item.Date);  // Use the formatted date directly
             const lineData = spxData.map(item => item.Close);
             const barData = spxData.map(item => item.pct_change);
@@ -94,7 +104,7 @@
                         borderWidth: 4,
                         fill: false,
                         yAxisID: 'y',
-                        pointRadius: 0
+                        pointRadius: 2
                     },
                     {
                         type: 'bar',
@@ -104,7 +114,7 @@
                             value > 0 ? 'rgba(75, 192, 75, 0.3)' : 'rgba(192, 75, 75, 0.3)'
                         ),
                         yAxisID: 'y1',
-                        pointRadius: 0
+                        pointRadius: 2
                     },
                     {
                         type: 'bar',
@@ -112,7 +122,7 @@
                         data: absBarData,
                         backgroundColor: 'rgba(0, 255, 127, 1)',
                         yAxisID: 'y1',
-                        pointRadius: 0,
+                        pointRadius: 2,
                         hidden: true  // Hidden by default
                     },
                     {
@@ -124,7 +134,7 @@
                         borderWidth: 2,
                         fill: false,
                         yAxisID: 'y1',
-                        pointRadius: 0,
+                        pointRadius: 2,
                         hidden: true  // Hidden by default
                     }]
                 },
@@ -201,7 +211,7 @@
                         backgroundColor: 'rgba(255, 165, 0, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     },
                     {
                         type: 'line',
@@ -211,7 +221,7 @@
                         backgroundColor: 'rgba(75, 192, 75, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     },
                     {
                         type: 'line',
@@ -221,7 +231,7 @@
                         backgroundColor: 'rgba(192, 75, 75, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     }]
                 },
                 options: {
@@ -285,7 +295,7 @@
                         backgroundColor: 'rgba(255, 165, 0, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     },
                     {
                         type: 'line',
@@ -295,7 +305,7 @@
                         backgroundColor: 'rgba(75, 192, 75, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     }]
                 },
                 options: {
@@ -359,7 +369,7 @@
                         backgroundColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 4,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: 2
                     }]
                 },
                 options: {
@@ -411,6 +421,165 @@
                     }
                 }
             });
+
+            // SPY vs IWM vs QQQ vs FEZ cumulative returns chart
+            const ctx5 = document.getElementById('etfComparisonChart').getContext('2d');
+            const etfComparisonChart = new Chart(ctx5, {
+                type: 'line',
+                data: {
+                    labels: spyData.map(item => item.Date),
+                    datasets: [{
+                        type: 'line',
+                        label: 'SPY cumulative return',
+                        data: spyData.map(item => item.cum_return),
+                        borderColor: 'rgba(255, 165, 0, 1)',
+                        backgroundColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 2
+                    },
+                    {
+                        type: 'line',
+                        label: 'IWM cumulative return',
+                        data: iwmData.map(item => item.cum_return),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 2
+                    },
+                    {
+                        type: 'line',
+                        label: 'QQQ cumulative return',
+                        data: qqqData.map(item => item.cum_return),
+                        borderColor: 'rgba(192, 75, 75, 1)',
+                        backgroundColor: 'rgba(192, 75, 75, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 2
+                    },
+                    {
+                        type: 'line',
+                        label: 'FEZ cumulative return',
+                        data: fezData.map(item => item.cum_return),
+                        borderColor: 'rgba(75, 75, 192, 1)',
+                        backgroundColor: 'rgba(75, 75, 192, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // SPY - IWM cumulative returns chart
+            const ctx6 = document.getElementById('spyIwmDiffChart').getContext('2d');
+            const spyIwmDiffChart = new Chart(ctx6, {
+                type: 'line',
+                data: {
+                    labels: spyData.map(item => item.Date),
+                    datasets: [{
+                        type: 'line',
+                        label: 'SPY - IWM cumulative return',
+                        data: spyData.map((item, index) => item.cum_return - iwmData[index].cum_return),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 4,
+                        fill: false,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            ticks: {
+                                source: 'labels',
+                                stepSize: 1,
+                                maxRotation: 45,
+                                autoSkip: true,
+                                autoSkipPadding: 50
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label.split('T')[0];
+                                },
+                                label: function(context) {
+                                    return `Difference: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
         </script>
         {# {% include "header.html" %} #}
         {# {% include "table.html" %} #}
