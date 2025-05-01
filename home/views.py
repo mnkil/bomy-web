@@ -47,7 +47,7 @@ def hello(request):
         connection.close()
 
     df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dft = df.tail(180)
+    dft = df.tail(306)
     dft['apy'] = dft['apy'].multiply(100)
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
