@@ -42,6 +42,10 @@
     <canvas id="myChart3"></canvas>
     </div>
     <p id="footnote" class="text-center"></p>
+    <h2 class="text-left" style="color: black; background-color: white;">IBIT RTH & ON</h2>
+    <div class="chart-container" style="width:100%">
+        <canvas id="ibitChart"></canvas>
+    </div>
 <script>
     moment.locale('en');
     var ctx = document.getElementById('myChart').getContext('2d');
@@ -193,16 +197,16 @@
         },
         options: {
             scales: {
-                y: [{
-                    id: 'y-axis-1',
+                'y-axis-1': {
+                    type: 'linear',
                     position: 'left',
                     beginAtZero: false
                 },
-                {
-                    id: 'y-axis-2',
+                'y-axis-2': {
+                    type: 'linear',
                     position: 'right',
                     beginAtZero: false
-                }]
+                }
             },
             plugins: {
                 legend: {
@@ -266,6 +270,89 @@ var formattedLabels = expirationData.expiration_timestamp.map(function(timestamp
         return new Date(e);
     })));
     document.getElementById('footnote').innerText = 'deribit vols: ' + oldestTimestamp.toLocaleString('en-US', { hour12: false, timeStyle: 'medium', dateStyle: 'short' });
+</script>
+<script>
+    var ctxIbit = document.getElementById('ibitChart').getContext('2d');
+    var ibitDataRaw = '{{ ibit_data|escapejs }}';
+    var ibitData = ibitDataRaw ? JSON.parse(ibitDataRaw) : [];
+    var ibitLabels = ibitData.map(item => item.Date);
+    var ibitCumReturn = ibitData.map(item => item.cum_return);
+    var ibitCumOvernight = ibitData.map(item => item.cum_overnight);
+    var ibitCumSession = ibitData.map(item => item.cum_session);
+    var ibitChart = new Chart(ctxIbit, {
+        type: 'line',
+        data: {
+            labels: ibitLabels,
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'IBIT cumulative return',
+                    data: ibitCumReturn,
+                    borderColor: 'rgba(255,255,255,1)',
+                    backgroundColor: 'rgba(255,255,255,0.5)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    fill: false
+                },
+                {
+                    type: 'line',
+                    label: 'Overnight return',
+                    data: ibitCumOvernight,
+                    borderColor: 'rgba(75, 192, 75, 1)',
+                    backgroundColor: 'rgba(75, 192, 75, 1)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    fill: false
+                },
+                {
+                    type: 'line',
+                    label: 'RTH return',
+                    data: ibitCumSession,
+                    borderColor: 'rgba(192, 75, 75, 1)',
+                    backgroundColor: 'rgba(192, 75, 75, 1)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'month',
+                        displayFormats: {
+                            month: 'MMM yyyy'
+                        },
+                        tooltipFormat: 'yyyy-MM-dd'
+                    },
+                    ticks: {
+                        source: 'labels',
+                        stepSize: 1,
+                        maxRotation: 45,
+                        autoSkip: true,
+                        autoSkipPadding: 50
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: false
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'rect',
+                        color: 'white'
+                    }
+                }
+            }
+        }
+    });
 </script>
 </body>
 </html>

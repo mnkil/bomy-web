@@ -197,6 +197,9 @@ def hello(request):
     df_btc_atm['mid_iv'] = (df_btc_atm['bid_iv'] + df_btc_atm['ask_iv']) / 2
     # Assuming 'df' is your DataFrame
 
+    # For BTC
+    df_btc_atm = df_btc_atm.sort_values('expiration_timestamp')
+
     expiration_data = {
         'expiration_timestamp': df_btc_atm['expiration_timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist(),
         'mid_iv': df_btc_atm['mid_iv'].tolist(),
@@ -214,12 +217,62 @@ def hello(request):
     df_eth_atm['mid_iv'] = (df_eth_atm['bid_iv'] + df_eth_atm['ask_iv']) / 2
     # Assuming 'df' is your DataFrame
 
+    # For ETH
+    df_eth_atm = df_eth_atm.sort_values('expiration_timestamp')
+
+    df_eth_atm = df_eth_atm.sort_values('expiration_timestamp')
+
     eth_expiration_data = {
         'expiration_timestamp': df_eth_atm['expiration_timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist(),
         'mid_iv': df_eth_atm['mid_iv'].tolist(),
         'timestamp': df_eth_atm['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist()
     }
     eth_expiration_data_json = json.dumps(eth_expiration_data, cls=DjangoJSONEncoder)
+
+    # --- IBIT ETF DATA FROM POLYGON ---
+    api_key = getattr(settings, 'POLYGON_API_KEY', None)
+    ibit_data_json = '[]'
+    try:
+        if api_key:
+            now = datetime.now()
+            tomorrow = now + pd.Timedelta(days=1)
+            end = tomorrow.strftime("%Y-%m-%d")
+            start_date = "2024-06-01"
+            end_date = end
+            url = f"https://api.polygon.io/v2/aggs/ticker/IBIT/range/1/day/{start_date}/{end_date}"
+            params = {
+                "adjusted": "true",
+                "sort": "asc",
+                "limit": 50000,
+                "apiKey": api_key
+            }
+            response = requests.get(url, params=params)
+            if response.status_code == 200:
+                data_ibit = response.json()
+                ibit_records = []
+                results = data_ibit.get("results", [])
+                for bar in results:
+                    date = pd.to_datetime(bar["t"], unit='ms')
+                    ibit_records.append({
+                        "Date": date,
+                        "Open": bar["o"],
+                        "Close": bar["c"]
+                    })
+                if ibit_records:
+                    df_ibit = pd.DataFrame(ibit_records)
+                    df_ibit.set_index('Date', inplace=True)
+                    df_ibit['cum_return'] = np.log(df_ibit['Close'] / df_ibit['Close'].iloc[0]) * 100
+                    df_ibit['overnight_return'] = np.log(df_ibit['Open'] / df_ibit['Close'].shift(1)) * 100
+                    df_ibit['session_return'] = np.log(df_ibit['Close'] / df_ibit['Open']) * 100
+                    df_ibit['cum_overnight'] = df_ibit['overnight_return'].cumsum()
+                    df_ibit['cum_session'] = df_ibit['session_return'].cumsum()
+                    df_ibit_json = df_ibit.reset_index()
+                    df_ibit_json['Date'] = df_ibit_json['Date'].dt.strftime('%Y-%m-%d')
+                    ibit_data_json = df_ibit_json.to_json(orient='records')
+    except Exception as e:
+        # Log the error but do not break the rest of the view
+        logger.error(f'Error fetching IBIT data: {e}')
+    # --- END IBIT ETF DATA ---
 
     context = {
         'image_url': image_url,
@@ -233,7 +286,8 @@ def hello(request):
         'sol_data_ma': sol_json_ma,
         'xbt_json': xbt_json,
         'expiration_data': expiration_data_json,
-        'eth_expiration_data':  eth_expiration_data_json
+        'eth_expiration_data':  eth_expiration_data_json,
+        'ibit_data': ibit_data_json
     }
 
     return render(request, 'hello.html', context)
@@ -316,7 +370,7 @@ def eq_view(request):
         spx_data_json = []
 
     # Fetch SPY and FEZ data
-    etfs = ["SPY", "FEZ", "IWM", "QQQ"]
+    etfs = ["SPY", "FEZ", "IWM", "QQQ", "IBIT"]
     etf_data = {}
     
     for etf in etfs:
@@ -392,6 +446,7 @@ def eq_view(request):
         'fez_data': json.dumps(etf_data['FEZ']),
         'iwm_data': json.dumps(etf_data['IWM']),
         'qqq_data': json.dumps(etf_data['QQQ']),
+        'ibit_data': json.dumps(etf_data['IBIT']),
         'diff_data': json.dumps(etf_data['DIFF']),
         'diffspyiwm_data': json.dumps(etf_data['SPYIWMDIFF'])
     }
