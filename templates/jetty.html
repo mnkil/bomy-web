@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>bidoffermineyours.com</title>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <style>
+            body, html {
+                z-index: 9999;
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 100%; 
+            }
+            .chart-container {
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Load jQuery first -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <!-- Then Bootstrap and other dependencies -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+        <!-- <link rel="icon" href="{% static 'alpha-inf.ico' %}" type="image/x-icon"> -->
+        <link rel="apple-touch-icon-precomposed"
+            sizes="57x57" href="{% static 'favicon-apple-touch-114.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="114x114" href="{% static 'favicon-apple-touch-114.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="72x72" href="{% static 'favicon-apple-touch-144.png' %}">
+        <link rel="apple-touch-icon-precomposed"
+            sizes="144x144" href="{% static 'favicon-apple-touch-144.png' %}">
+        <link rel="icon" type="image/vnd.microsoft.icon"
+            sizes="32x32 48x48" href="{% static 'favicon.ico' %}">
+        <link rel="icon" sizes="128x128" href="{% static 'favicon.icns' %}">
+        <link rel="icon" href="{% static 'favicon.png' %}" type="image/x-icon">
+    </head>
+    <body style="background-color: black; color: white;">
+        <h1>bidoffermineyours <span style="font-style: italic;">JETTY</span></h1>
+        <div class="centered-image-container">
+            <img src="{{ image_url }}" alt="argh..">
+        </div>
+        <br>
+        
+        <h2 class="text-left" style="color: black; background-color: white;">OMS Database - Open Trades</h2>
+        
+        {% if total_tables > 0 %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-dark text-white">
+                            <div class="card-header">
+                                <h5 class="mb-0">Database Overview</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 class="text-success">{{ total_tables }}</h3>
+                                            <small>Active Tables</small>
+                                        </div>
+                                    </div>
+                                    {% for table in tables_info %}
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 class="text-info">{{ table.count }}</h3>
+                                            <small>{{ table.name|upper }}</small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% for table in tables_info %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card bg-dark text-white">
+                            <div class="card-header">
+                                <h5 class="mb-0">// {{ table.name|upper }} - {{ table.count }} RECORDS</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-striped">
+                                        <thead>
+                                            <tr>
+                                                {% for column in table.columns %}
+                                                <th>{{ column|upper }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in table.rows %}
+                                            <tr>
+                                                {% for cell in row %}
+                                                <td>{{ cell }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-dark text-white">
+                            <div class="card-body text-center">
+                                <h4>// No active trades found</h4>
+                                <p class="text-muted">-> Check database connection and data availability</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </body>
+</html> 

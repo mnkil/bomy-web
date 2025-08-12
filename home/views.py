@@ -95,6 +95,7 @@ def hello(request):
     btc_data_ma = df_btc_ma[['timestamp', 'apy']].to_dict(orient='list')
     eth_data_ma = df_eth_ma[['timestamp', 'apy']].to_dict(orient='list')
     sol_data_ma = df_sol_ma[['timestamp', 'apy']].to_dict(orient='list')
+    # print(btc_data_ma)
 
     # Convert data to JSON for passing to the template
     btc_json = json.dumps(btc_data)
@@ -103,7 +104,6 @@ def hello(request):
     btc_json_ma = json.dumps(btc_data_ma)
     eth_json_ma = json.dumps(eth_data_ma)
     sol_json_ma = json.dumps(sol_data_ma)
-    # print(btc_data_ma)
 
     # btc spot data
     # df_btc_sp_path = 'home/ubuntu/bomy-web/static/btc-hist.pickle'
@@ -495,3 +495,76 @@ def get_visits(request):
 
 def visits_view(request):
     return render(request, 'visits.html')
+
+def jetty_view(request):
+    """View for displaying open trades from OMS database"""
+    image_path = 'tramdepot.jpeg'
+    image_url = static(image_path)
+    
+    # Initialize variables
+    tables_info = []
+    
+    try:
+        # Construct the path to the OMS database
+        oms_db_path = os.path.join(settings.BASE_DIR, 'static', 'oms.db')
+        
+        # Check if the database file exists
+        if not os.path.exists(oms_db_path):
+            return HttpResponse("OMS database file does not exist.")
+        
+        # Connect to the OMS database
+        conn = sqlite3.connect(oms_db_path)
+        
+        try:
+            # Get table names
+            tables = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", conn)
+            
+            # Process each table
+            for table_name in tables['name']:
+                # Get schema
+                schema = pd.read_sql_query(f"PRAGMA table_info({table_name})", conn)
+                
+                # Check if 'open_trade' column exists
+                if 'open_trade' in schema['name'].values:
+                    # Get open trades only
+                    data = pd.read_sql_query(f"SELECT * FROM {table_name} WHERE open_trade = 1", conn)
+                else:
+                    # Fallback: get all data if no open_trade column
+                    data = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
+                
+                if not data.empty:
+                    # Convert DataFrame to a format that works with Django templates
+                    columns = list(data.columns)
+                    rows = []
+                    for _, row in data.iterrows():
+                        row_data = []
+                        for col in columns:
+                            value = row[col]
+                            if pd.isna(value):
+                                row_data.append('-')
+                            else:
+                                row_data.append(str(value))
+                        rows.append(row_data)
+                    
+                    # Store table info for display
+                    tables_info.append({
+                        'name': table_name,
+                        'count': len(rows),
+                        'columns': columns,
+                        'rows': rows  # Use rows instead of data
+                    })
+        
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"Error reading OMS database: {str(e)}")
+        return HttpResponse(f"An error occurred while reading OMS database: {str(e)}")
+    
+    context = {
+        'image_url': image_url,
+        'tables_info': tables_info,
+        'total_tables': len(tables_info)
+    }
+    
+    return render(request, 'jetty.html', context)

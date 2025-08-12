@@ -21,6 +21,7 @@ urlpatterns = [
     path('', views.hello, name='home'),  # Assuming 'hello' is your home view
     path('eq/', views.eq_view, name='eq_view'),  # Lowercase 'eq'
     path('EQ/', views.eq_view, name='eq_view_upper'),  # Uppercase 'EQ'
+    path('jetty/', views.jetty_view, name='jetty'),  # New jetty page
     path('api/visits/', views.get_visits, name='get_visits'),
     path('visits/', views.visits_view, name='visits'),
     # other paths...
