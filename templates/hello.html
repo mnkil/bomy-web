@@ -4,6 +4,89 @@
     <head>
         <title>bidoffermineyours.com</title>
         <link rel="stylesheet" href="{% static 'style.css' %}">
+        <style>
+            .nav-menu {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                padding: 8px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .nav-menu:hover {
+                background: rgba(0, 0, 0, 0.95);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: scale(1.05);
+            }
+            
+            .nav-toggle {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+            }
+            
+            .nav-line {
+                width: 20px;
+                height: 2px;
+                background: white;
+                transition: all 0.3s ease;
+            }
+            
+            .nav-links {
+                display: none;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .nav-menu.expanded .nav-links {
+                display: block;
+            }
+            
+            .nav-menu.expanded .nav-line:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+            
+            .nav-menu.expanded .nav-line:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .nav-menu.expanded .nav-line:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -6px);
+            }
+            
+            .nav-link {
+                display: block;
+                color: white;
+                text-decoration: none;
+                padding: 8px 12px;
+                margin: 4px 0;
+                border-radius: 4px;
+                transition: background 0.2s ease;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+            
+            .nav-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: #e0e0e0;
+            }
+            
+            .nav-link.active {
+                background: rgba(255, 255, 255, 0.15);
+                color: #f0f0f0;
+                border-left: 3px solid #d0d0d0;
+            }
+        </style>
 
         <!-- <link rel="icon" href="{% static 'alpha-inf.ico' %}" type="image/x-icon"> -->
         <link rel="apple-touch-icon-precomposed"
@@ -20,6 +103,20 @@
         <link rel="icon" href="{% static 'favicon.png' %}" type="image/x-icon">
     </head>
     <body>
+        <!-- Navigation Menu -->
+        <div class="nav-menu" id="navMenu">
+            <div class="nav-toggle">
+                <div class="nav-line"></div>
+                <div class="nav-line"></div>
+                <div class="nav-line"></div>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">Crypto</a>
+                <a href="/eq/" class="nav-link">EQ</a>
+                <a href="/jetty/" class="nav-link">Jetty</a>
+            </div>
+        </div>
+
         <h1>bidoffermineyours</h1>
     <div class="centered-image-container">
 	            <img src="{{ image_url }}" alt="argh..">
@@ -28,6 +125,21 @@
     {% include "header.html" %}
     {% include "table.html" %}
     {% include "chart.html" %}
+    
+    <script>
+        // Navigation menu toggle
+        document.getElementById('navMenu').addEventListener('click', function() {
+            this.classList.toggle('expanded');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navMenu = document.getElementById('navMenu');
+            if (!navMenu.contains(event.target)) {
+                navMenu.classList.remove('expanded');
+            }
+        });
+    </script>
     </body>
 </html>
 
