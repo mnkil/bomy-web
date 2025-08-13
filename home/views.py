@@ -46,38 +46,83 @@ def hello(request):
     finally:
         connection.close()
 
-    df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    dft = df.tail(306)
+    # Check what columns we actually have and rename if needed
+    print(f"Available columns: {list(df.columns)}")
+    
+    # Handle different possible timestamp column names
+    if 'Timestamp' in df.columns:
+        df.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
+    elif 'timestamp' not in df.columns:
+        # If neither exists, try to find a similar column
+        time_columns = [col for col in df.columns if 'time' in col.lower() or 'date' in col.lower()]
+        if time_columns:
+            df.rename(columns={time_columns[0]: 'timestamp'}, inplace=True)
+            print(f"Renamed column '{time_columns[0]}' to 'timestamp'")
+        else:
+            return HttpResponse("No timestamp column found in database")
+    
+    # Convert timestamp to datetime for proper time filtering
+    # Handle both Unix timestamps (milliseconds) and string timestamps
+    if df['timestamp'].dtype == 'object':
+        # If it's object type, try to parse as Unix timestamp first
+        try:
+            # Check if first value looks like Unix timestamp (13+ digits)
+            first_ts = str(df['timestamp'].iloc[0])
+            if len(first_ts) >= 13 and first_ts.isdigit():
+                # Convert from milliseconds to datetime
+                df['timestamp'] = pd.to_datetime(df['timestamp'].astype(float), unit='ms')
+                print("Converted Unix timestamps (milliseconds) to datetime")
+            else:
+                # Try regular datetime parsing
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                print("Converted string timestamps to datetime")
+        except:
+            # Fallback to regular datetime parsing
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            print("Fallback: converted timestamps to datetime")
+    else:
+        # If it's numeric, assume Unix timestamp
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        print("Converted numeric Unix timestamps to datetime")
+    
+    # Find the most recent timestamp
+    latest_timestamp = df['timestamp'].max()
+    
+    # Configure the time window for filtering recent prints
+    # Adjust this value if you need a different time window (e.g., 2 minutes, 10 minutes)
+    time_window_minutes = 2  # instead of 5
+    
+    # Filter for prints within the specified time window of the latest timestamp
+    # This ensures we get the most recent batch of prints without mixing old data
+    time_threshold = latest_timestamp - pd.Timedelta(minutes=time_window_minutes)
+    dft = df[df['timestamp'] >= time_threshold].copy()
+    
+    # If we have very few recent prints, fall back to a reasonable number
+    if len(dft) < 50:
+        # Get the last 100 rows as fallback, but this should rarely happen
+        dft = df.tail(100).copy()
+    
+    # Debug info - you can remove this later
+    print(f"Total records in database: {len(df)}")
+    print(f"Latest timestamp: {latest_timestamp}")
+    print(f"Time threshold ({time_window_minutes} min): {time_threshold}")
+    print(f"Records within {time_window_minutes} minutes: {len(dft)}")
+    print(f"Time range: {dft['timestamp'].min()} to {dft['timestamp'].max()}")
+    
+    # Use time-filtered data for the main table display
     dft['apy'] = dft['apy'].multiply(100)
     dft['apy'] = dft['apy'].apply(lambda x: round(x,0))
     dft['fundingrate'] = dft['fundingrate'].multiply(10000)
     dft['fundingrate'] = dft['fundingrate'].apply(lambda x: round(x, 3))
+    
+    # Use the ORIGINAL full dataset for charts (keep what was working)
     dfchart = df[(df['market'] == 'ETH') | (df['market'] == 'BTC') | (df['market'] == 'SOL')]
     dfchart['apy'] = dfchart['apy'].multiply(100)
     dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
     dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
     dfchart['fundingrate'] = dfchart['fundingrate'].apply(lambda x: round(x,3))
-    json_records = dft.reset_index().to_json(orient='records')
-    data = []
-    data = json.loads(json_records)
-
-    #dfh.rename(columns={'Timestamp': 'timestamp'}, inplace=True)
-    #dfth = dfh.tail(151)
-    #dfth['apy'] = dfth['apy'].multiply(100)
-    #dfth['apy'] = dfth['apy'].apply(lambda x: round(x,0))
-    #dfth['fundingrate'] = dfth['fundingrate'].multiply(10000)
-    #dfth['fundingrate'] = dfth['fundingrate'].apply(lambda x: round(x, 3))
-    # dfchart = df[(df['market'] == 'ETH-USD') | (df['market'] == 'BTC-USD') | (df['market'] == 'SOL-USD')]
-    # dfchart['apy'] = dfchart['apy'].multiply(100)
-    # dfchart['apy'] = dfchart['apy'].apply(lambda x: round(x,0))
-    # dfchart['fundingrate'] = dfchart['fundingrate'].multiply(10000)
-    # dfchart['fundingrate'] = dfchart['fundingrate'].apply(lambda x: round(x,3))
-    #json_recordsh = dfth.reset_index().to_json(orient='records')
-    #datah = []
-    #datah = json.loads(json_recordsh)
-
+    
     # Filter data for BTC-USD and ETH-USD
-
     df_btc = dfchart[dfchart['market'] == 'BTC']
     df_eth = dfchart[dfchart['market'] == 'ETH']
     df_sol = dfchart[dfchart['market'] == 'SOL']
@@ -95,6 +140,24 @@ def hello(request):
     btc_data_ma = df_btc_ma[['timestamp', 'apy']].to_dict(orient='list')
     eth_data_ma = df_eth_ma[['timestamp', 'apy']].to_dict(orient='list')
     sol_data_ma = df_sol_ma[['timestamp', 'apy']].to_dict(orient='list')
+    
+    # Convert timestamps to strings for JSON serialization (keep charts working)
+    btc_data['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in btc_data['timestamp']]
+    eth_data['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in eth_data['timestamp']]
+    sol_data['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in sol_data['timestamp']]
+    btc_data_ma['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in btc_data_ma['timestamp']]
+    eth_data_ma['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in eth_data_ma['timestamp']]
+    sol_data_ma['timestamp'] = [ts.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(ts) else '' for ts in sol_data_ma['timestamp']]
+    
+    # Convert the main funding table data (dft) to JSON with formatted timestamps
+    # Create a copy for display to avoid affecting the original data
+    dft_display = dft.copy()
+    dft_display['timestamp'] = dft_display['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+    
+    json_records = dft_display.reset_index().to_json(orient='records')
+    data = []
+    data = json.loads(json_records)
+
     # print(btc_data_ma)
 
     # Convert data to JSON for passing to the template
