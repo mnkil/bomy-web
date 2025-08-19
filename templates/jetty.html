@@ -101,6 +101,11 @@
                 color: #f0f0f0;
                 border-left: 3px solid #d0d0d0;
             }
+            
+            .table-fit-content {
+                width: auto !important;
+                margin: 0 auto;
+            }
         </style>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Load jQuery first -->
@@ -224,6 +229,143 @@
                     </div>
                 </div>
             </div>
+        {% endif %}
+        
+        <!-- Trades Database Section -->
+        {% if trades_info %}
+            <div class="container-fluid">
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card bg-dark text-white">
+                        <div class="card-header">
+                            <h5 class="mb-0">// TRADES DATABASE</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h3 class="text-warning">{{ trades_info.count }}</h3>
+                                        <small>Trades in the last 7 days</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h4 class="text-info">{{ trades_info.display_count }}</h4>
+                                        <small>Total trades available</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            
+                            {% if trades_info.display_count > 0 %}
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-dark table-striped">
+                                        <thead>
+                                            <tr>
+                                                {% for column in trades_info.columns %}
+                                                <th>{{ column|upper }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in trades_info.rows %}
+                                            <tr>
+                                                {% for cell in row %}
+                                                <td>{{ cell }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pagination Controls -->
+                                {% if trades_info.pagination.total_pages > 1 %}
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="text-muted">
+                                        Showing trades {{ trades_info.pagination.start_trade }} to {{ trades_info.pagination.end_trade }} of {{ trades_info.pagination.total_trades }}
+                                    </div>
+                                    <nav aria-label="Trades pagination">
+                                        <ul class="pagination pagination-sm mb-0">
+                                            <!-- First page -->
+                                            {% if trades_info.pagination.current_page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?trades_page=1" aria-label="First page">
+                                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            
+                                            <!-- Previous page -->
+                                            {% if trades_info.pagination.current_page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?trades_page={{ trades_info.pagination.current_page|add:'-1' }}" aria-label="Previous page">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            
+                                            <!-- Page numbers -->
+                                            {% for page_num in trades_info.pagination.total_pages|add:"-1"|add:"1"|make_list %}
+                                                {% if page_num >= 1 and page_num <= trades_info.pagination.total_pages %}
+                                                    {% if page_num == trades_info.pagination.current_page %}
+                                                    <li class="page-item active">
+                                                        <span class="page-link">{{ page_num }}</span>
+                                                    </li>
+                                                    {% else %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?trades_page={{ page_num }}">{{ page_num }}</a>
+                                                    </li>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            <!-- Next page -->
+                                            {% if trades_info.pagination.current_page < trades_info.pagination.total_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?trades_page={{ trades_info.pagination.current_page|add:'1' }}" aria-label="Next page">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            
+                                            <!-- Last page -->
+                                            {% if trades_info.pagination.current_page < trades_info.pagination.total_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?trades_page={{ trades_info.pagination.total_pages }}" aria-label="Last page">
+                                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center mt-3">
+                                    <p class="text-muted">-> No trades found newer than January 2025</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+            <div class="container-fluid">
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card bg-dark text-white">
+                            <div class="card-body text-center">
+                                <h4>// Trades database not available</h4>
+                                <p class="text-muted">-> Check if trades.db exists and is accessible</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endif %}
     </div>
     

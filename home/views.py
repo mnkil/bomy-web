@@ -560,12 +560,26 @@ def visits_view(request):
     return render(request, 'visits.html')
 
 def jetty_view(request):
-    """View for displaying open trades from OMS database"""
+    """View for displaying open trades from OMS database and recent trades from trades.db"""
     image_path = 'tramdepot.jpeg'
     image_url = static(image_path)
     
     # Initialize variables
     tables_info = []
+    trades_info = None
+    
+    # Pagination for trades
+    trades_per_page = 10
+    trades_page = request.GET.get('trades_page', 1)
+    try:
+        trades_page = int(trades_page)
+    except ValueError:
+        trades_page = 1
+    trades_page = request.GET.get('trades_page', 1)
+    try:
+        trades_page = int(trades_page)
+    except ValueError:
+        trades_page = 1
     
     try:
         # Construct the path to the OMS database
@@ -624,10 +638,136 @@ def jetty_view(request):
         logger.error(f"Error reading OMS database: {str(e)}")
         return HttpResponse(f"An error occurred while reading OMS database: {str(e)}")
     
+    # Now fetch trades from trades.db
+    try:
+        trades_db_path = os.path.join(settings.BASE_DIR, 'static', 'trades.db')
+        
+        if os.path.exists(trades_db_path):
+            conn = sqlite3.connect(trades_db_path)
+            
+            try:
+                # Get table names from trades.db
+                tables = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", conn)
+                
+                if not tables.empty:
+                    # Use the first table (assuming there's only one or we want the main one)
+                    table_name = tables['name'].iloc[0]
+                    
+                    # Get schema to check available columns
+                    schema = pd.read_sql_query(f"PRAGMA table_info({table_name})", conn)
+                    available_columns = schema['name'].tolist()
+                    
+                    # Define the columns we want to display
+                    desired_columns = ['timestamp', 'ticker', 'oid']
+                    
+                    # Filter to only include columns that exist in the database
+                    columns_to_select = [col for col in desired_columns if col in available_columns]
+                    
+                    if columns_to_select:
+                        # Build the SELECT query for display (all trades after Jan 2025)
+                        select_clause = ', '.join(columns_to_select)
+                        
+                        # Query for trades newer than January 2025 (for display)
+                        display_query = f"""
+                        SELECT {select_clause} 
+                        FROM {table_name} 
+                        WHERE timestamp >= datetime('2024-01-01')
+                        ORDER BY timestamp DESC
+                        """
+                        
+                        display_data = pd.read_sql_query(display_query, conn)
+                        
+                        # Query for trades in last 7 days (for counter)
+                        counter_query = f"""
+                        SELECT COUNT(*) as count
+                        FROM {table_name} 
+                        WHERE timestamp >= datetime('now', '-7 days')
+                        """
+                        
+                        counter_data = pd.read_sql_query(counter_query, conn)
+                        recent_count = counter_data['count'].iloc[0] if not counter_data.empty else 0
+                        
+                        if not display_data.empty:
+                            # Calculate pagination
+                            total_trades = len(display_data)
+                            total_pages = (total_trades + trades_per_page - 1) // trades_per_page
+                            
+                            # Ensure page is within valid range
+                            if trades_page < 1:
+                                trades_page = 1
+                            elif trades_page > total_pages:
+                                trades_page = total_pages
+                            
+                            # Get the slice of data for current page
+                            start_idx = (trades_page - 1) * trades_per_page
+                            end_idx = start_idx + trades_per_page
+                            page_data = display_data.iloc[start_idx:end_idx]
+                            
+                            # Convert DataFrame to a format that works with Django templates
+                            rows = []
+                            for _, row in page_data.iterrows():
+                                row_data = []
+                                for col in columns_to_select:
+                                    value = row[col]
+                                    if pd.isna(value):
+                                        row_data.append('-')
+                                    else:
+                                        row_data.append(str(value))
+                                rows.append(row_data)
+                            
+                            trades_info = {
+                                'name': 'trades',
+                                'count': recent_count,  # Use the 7-day count for the counter
+                                'display_count': total_trades,  # Store the total count
+                                'columns': columns_to_select,
+                                'rows': rows,
+                                'pagination': {
+                                    'current_page': trades_page,
+                                    'total_pages': total_pages,
+                                    'trades_per_page': trades_per_page,
+                                    'start_trade': start_idx + 1,
+                                    'end_trade': min(end_idx, total_trades),
+                                    'total_trades': total_trades
+                                }
+                            }
+                        else:
+                            trades_info = {
+                                'name': 'trades',
+                                'count': recent_count,  # Use the 7-day count for the counter
+                                'display_count': 0,
+                                'columns': columns_to_select,
+                                'rows': [],
+                                'pagination': {
+                                    'current_page': 1,
+                                    'total_pages': 1,
+                                    'trades_per_page': trades_per_page,
+                                    'start_trade': 0,
+                                    'end_trade': 0,
+                                    'total_trades': 0
+                                }
+                            }
+                    else:
+                        trades_info = {
+                            'name': 'trades',
+                            'count': 0,
+                            'columns': [],
+                            'rows': []
+                        }
+                
+            finally:
+                conn.close()
+        else:
+            trades_info = None
+            
+    except Exception as e:
+        logger.error(f"Error reading trades database: {str(e)}")
+        trades_info = None
+    
     context = {
         'image_url': image_url,
         'tables_info': tables_info,
-        'total_tables': len(tables_info)
+        'total_tables': len(tables_info),
+        'trades_info': trades_info
     }
     
     return render(request, 'jetty.html', context)
